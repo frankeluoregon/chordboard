@@ -7,52 +7,108 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
-        <h1>ChordBoard</h1>
+    <!-- Sticky Top Bar -->
+    <div class="top-bar">
+        <div class="top-bar-content">
+            <h1>ChordBoard</h1>
 
-        <div class="global-controls">
-            <div class="input-group">
-                <label for="instrument">Instrument:</label>
-                <select id="instrument">
-                    <option value="guitar">Guitar (6-string)</option>
-                    <option value="bass">Bass (4-string)</option>
+            <div class="mode-toggle">
+                <button id="fretboard-mode-btn" class="mode-btn active">Chord Select</button>
+                <button id="progression-mode-btn" class="mode-btn">Progression</button>
+            </div>
+
+            <div class="top-controls">
+                <div class="input-group">
+                    <label for="instrument">Instrument:</label>
+                    <select id="instrument">
+                        <option value="guitar">Guitar</option>
+                        <option value="bass">Bass</option>
+                    </select>
+                </div>
+
+                <div class="input-group" id="num-chords-group">
+                    <label for="num-chords">Chords:</label>
+                    <select id="num-chords">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4" selected>4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="legend">
+        <div class="legend-item">
+            <span class="legend-marker root-note">R</span>
+            <span>Root</span>
+        </div>
+        <div class="legend-item">
+            <span class="legend-marker chord-tone">3</span>
+            <span>Chord Tone</span>
+        </div>
+        <div class="legend-item">
+            <span class="legend-marker scale-note">2</span>
+            <span>Scale Note</span>
+        </div>
+    </div>
+
+    <!-- Fretboard Mode -->
+    <div id="fretboard-page" class="page-content active">
+        <div id="fretboard-container"></div>
+    </div>
+
+    <!-- Progression Mode -->
+    <div id="progression-page" class="page-content">
+        <div class="progression-selector">
+            <h2>Select Progression Type</h2>
+
+            <div class="key-selector">
+                <label for="progression-key">Key:</label>
+                <select id="progression-key">
+                    <option value="C">C</option>
+                    <option value="C#">C#</option>
+                    <option value="D">D</option>
+                    <option value="D#">D#</option>
+                    <option value="E">E</option>
+                    <option value="F">F</option>
+                    <option value="F#">F#</option>
+                    <option value="G">G</option>
+                    <option value="G#">G#</option>
+                    <option value="A">A</option>
+                    <option value="A#">A#</option>
+                    <option value="B">B</option>
+                </select>
+
+                <label for="progression-quality">Quality:</label>
+                <select id="progression-quality">
+                    <option value="major">Major</option>
+                    <option value="minor">Minor</option>
                 </select>
             </div>
 
-            <div class="input-group">
-                <label for="num-chords">Number of Chords:</label>
-                <select id="num-chords">
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4" selected>4</option>
-                    <option value="5">5</option>
-                    <option value="6">6</option>
-                    <option value="7">7</option>
-                    <option value="8">8</option>
-                </select>
+            <div class="progression-list">
+                <button class="progression-btn" data-progression="I-IV-V" data-quality="major">I - IV - V (Classic Rock)</button>
+                <button class="progression-btn" data-progression="I-V-vi-IV" data-quality="major">I - V - vi - IV (Pop)</button>
+                <button class="progression-btn" data-progression="ii-V-I" data-quality="major">ii - V - I (Jazz)</button>
+                <button class="progression-btn" data-progression="I-vi-ii-V" data-quality="major">I - vi - ii - V (50s)</button>
+                <button class="progression-btn" data-progression="i-VI-III-VII" data-quality="minor">i - VI - III - VII (Minor Pop)</button>
+                <button class="progression-btn" data-progression="i-iv-v" data-quality="minor">i - iv - v (Minor Blues)</button>
+                <button class="progression-btn" data-progression="I-iii-IV-V" data-quality="major">I - iii - IV - V (Doo-Wop)</button>
+                <button class="progression-btn" data-progression="vi-IV-I-V" data-quality="major">vi - IV - I - V (Sensitive)</button>
             </div>
         </div>
 
-        <div class="legend">
-            <div class="legend-item">
-                <span class="legend-marker root-note">R</span>
-                <span>Root Note</span>
-            </div>
-            <div class="legend-item">
-                <span class="legend-marker chord-tone">3</span>
-                <span>Chord Tone (shows interval)</span>
-            </div>
-            <div class="legend-item">
-                <span class="legend-marker scale-note">2</span>
-                <span>Scale Note (shows scale degree)</span>
-            </div>
-        </div>
-
-        <div id="progression-container"></div>
+        <div id="progression-display"></div>
     </div>
 
     <script src="musicTheory.js"></script>
+    <script src="progressions.js"></script>
     <script src="fretboard.js"></script>
     <script src="app.js"></script>
 </body>

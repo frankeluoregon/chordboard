@@ -1,9 +1,14 @@
 // Main Application
 const App = {
     // Default settings
+    currentMode: 'fretboard', // 'fretboard' or 'progression'
     currentInstrument: 'guitar',
     numChords: 4,
     chords: [],
+
+    // Progression mode settings
+    progressionKey: 'C',
+    progressionQuality: 'major',
 
     /**
      * Initialize the application
@@ -15,8 +20,8 @@ const App = {
         // Set up event listeners
         this.setupEventListeners();
 
-        // Render the progression
-        this.renderProgression();
+        // Render the initial mode
+        this.renderFretboards();
     },
 
     /**
@@ -44,57 +49,143 @@ const App = {
      * Set up event listeners for controls
      */
     setupEventListeners() {
+        // Mode toggle
+        document.getElementById('fretboard-mode-btn').addEventListener('click', () => {
+            this.switchMode('fretboard');
+        });
+
+        document.getElementById('progression-mode-btn').addEventListener('click', () => {
+            this.switchMode('progression');
+        });
+
+        // Global controls
         const instrumentSelect = document.getElementById('instrument');
         const numChordsSelect = document.getElementById('num-chords');
 
         instrumentSelect.addEventListener('change', (e) => {
             this.currentInstrument = e.target.value;
             Fretboard.setInstrument(this.currentInstrument);
-            this.renderProgression();
+            if (this.currentMode === 'fretboard') {
+                this.renderFretboards();
+            } else {
+                this.renderProgressionDisplay();
+            }
         });
 
         numChordsSelect.addEventListener('change', (e) => {
             this.numChords = parseInt(e.target.value);
             this.initializeChords();
-            this.renderProgression();
+            this.renderFretboards();
         });
-    },
 
-    /**
-     * Update mode options for a specific chord
-     */
-    updateModeOptions(chordIndex) {
-        const modeSelect = document.getElementById(`mode-type-${chordIndex}`);
-        const chordType = this.chords[chordIndex].type;
-        const options = MusicTheory.modeOptions[chordType];
+        // Progression mode controls
+        document.getElementById('progression-key').addEventListener('change', (e) => {
+            this.progressionKey = e.target.value;
+        });
 
-        // Clear existing options
-        modeSelect.innerHTML = '';
+        document.getElementById('progression-quality').addEventListener('change', (e) => {
+            this.progressionQuality = e.target.value;
+        });
 
-        // Add new options
-        options.forEach((option, index) => {
-            const optElement = document.createElement('option');
-            optElement.value = option.value;
-            optElement.textContent = `${option.label} - ${option.description}`;
+        // Progression buttons
+        document.querySelectorAll('.progression-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const progression = e.target.dataset.progression;
+                const quality = e.target.dataset.quality;
 
-            // Select current mode or first option
-            if (option.value === this.chords[chordIndex].mode ||
-                (index === 0 && !this.chords[chordIndex].mode)) {
-                optElement.selected = true;
-                if (!this.chords[chordIndex].mode) {
-                    this.chords[chordIndex].mode = option.value;
+                // Update the quality selector to match the progression
+                if (quality) {
+                    document.getElementById('progression-quality').value = quality;
+                    this.progressionQuality = quality;
                 }
-            }
 
-            modeSelect.appendChild(optElement);
+                this.loadProgression(progression);
+            });
         });
     },
 
     /**
-     * Render the entire chord progression
+     * Switch between modes
      */
-    renderProgression() {
-        const container = document.getElementById('progression-container');
+    switchMode(mode) {
+        this.currentMode = mode;
+
+        // Update button states
+        document.getElementById('fretboard-mode-btn').classList.toggle('active', mode === 'fretboard');
+        document.getElementById('progression-mode-btn').classList.toggle('active', mode === 'progression');
+
+        // Update page visibility
+        document.getElementById('fretboard-page').classList.toggle('active', mode === 'fretboard');
+        document.getElementById('progression-page').classList.toggle('active', mode === 'progression');
+
+        // Show/hide controls
+        document.getElementById('num-chords-group').style.display = mode === 'fretboard' ? 'flex' : 'none';
+    },
+
+    /**
+     * Load a progression
+     */
+    loadProgression(progressionString) {
+        const chords = Progressions.parseProgression(progressionString, this.progressionKey, this.progressionQuality);
+        this.chords = chords;
+        this.numChords = chords.length;
+        this.renderProgressionDisplay();
+    },
+
+    /**
+     * Render progression display
+     */
+    renderProgressionDisplay() {
+        const container = document.getElementById('progression-display');
+        container.innerHTML = '';
+
+        for (let i = 0; i < this.numChords; i++) {
+            const chordSection = this.createProgressionChordSection(i);
+            container.appendChild(chordSection);
+        }
+
+        // Render fretboards after DOM is ready
+        setTimeout(() => {
+            for (let i = 0; i < this.numChords; i++) {
+                const chord = this.chords[i];
+                Fretboard.renderFretboard(
+                    `prog-fretboard-${i}`,
+                    chord.root,
+                    chord.type,
+                    chord.mode
+                );
+            }
+        }, 10);
+    },
+
+    /**
+     * Create a chord section for progression mode (no controls)
+     */
+    createProgressionChordSection(index) {
+        const section = document.createElement('div');
+        section.className = 'chord-section';
+
+        // Create label showing chord numeral and name
+        const label = document.createElement('div');
+        label.className = 'chord-label';
+        const chord = this.chords[index];
+        label.textContent = `${chord.numeral || index + 1} - ${chord.root} ${this.getChordTypeName(chord.type)} (${this.getModeName(chord.mode)})`;
+        section.appendChild(label);
+
+        // Create fretboard container
+        const fretboardContainer = document.createElement('div');
+        fretboardContainer.id = `prog-fretboard-${index}`;
+        fretboardContainer.className = 'fretboard-container';
+        section.appendChild(fretboardContainer);
+
+        return section;
+    },
+
+    /**
+     * Render fretboards for fretboard mode
+     */
+    renderFretboards() {
+        const container = document.getElementById('fretboard-container');
         container.innerHTML = '';
 
         for (let i = 0; i < this.numChords; i++) {
@@ -104,7 +195,7 @@ const App = {
     },
 
     /**
-     * Create a chord section with controls and fretboard
+     * Create a chord section with controls
      */
     createChordSection(index) {
         const section = document.createElement('div');
@@ -126,18 +217,12 @@ const App = {
             `root-note-${index}`,
             'Root:',
             [
-                { value: 'C', label: 'C' },
-                { value: 'C#', label: 'C#' },
-                { value: 'D', label: 'D' },
-                { value: 'D#', label: 'D#' },
-                { value: 'E', label: 'E' },
-                { value: 'F', label: 'F' },
-                { value: 'F#', label: 'F#' },
-                { value: 'G', label: 'G' },
-                { value: 'G#', label: 'G#' },
-                { value: 'A', label: 'A' },
-                { value: 'A#', label: 'A#' },
-                { value: 'B', label: 'B' }
+                { value: 'C', label: 'C' }, { value: 'C#', label: 'C#' },
+                { value: 'D', label: 'D' }, { value: 'D#', label: 'D#' },
+                { value: 'E', label: 'E' }, { value: 'F', label: 'F' },
+                { value: 'F#', label: 'F#' }, { value: 'G', label: 'G' },
+                { value: 'G#', label: 'G#' }, { value: 'A', label: 'A' },
+                { value: 'A#', label: 'A#' }, { value: 'B', label: 'B' }
             ],
             this.chords[index].root,
             (e) => {
@@ -169,7 +254,7 @@ const App = {
         );
         controls.appendChild(chordGroup);
 
-        // Mode selector (placeholder, will be populated)
+        // Mode selector
         const modeGroup = document.createElement('div');
         modeGroup.className = 'input-group';
         const modeLabel = document.createElement('label');
@@ -193,13 +278,42 @@ const App = {
         fretboardContainer.className = 'fretboard-container';
         section.appendChild(fretboardContainer);
 
-        // Populate mode options after elements are in DOM
+        // Populate mode options and render
         setTimeout(() => {
             this.updateModeOptions(index);
             this.updateFretboard(index);
         }, 0);
 
         return section;
+    },
+
+    /**
+     * Update mode options for a specific chord
+     */
+    updateModeOptions(chordIndex) {
+        const modeSelect = document.getElementById(`mode-type-${chordIndex}`);
+        if (!modeSelect) return;
+
+        const chordType = this.chords[chordIndex].type;
+        const options = MusicTheory.modeOptions[chordType];
+
+        modeSelect.innerHTML = '';
+
+        options.forEach((option, index) => {
+            const optElement = document.createElement('option');
+            optElement.value = option.value;
+            optElement.textContent = `${option.label} - ${option.description}`;
+
+            if (option.value === this.chords[chordIndex].mode ||
+                (index === 0 && !this.chords[chordIndex].mode)) {
+                optElement.selected = true;
+                if (!this.chords[chordIndex].mode) {
+                    this.chords[chordIndex].mode = option.value;
+                }
+            }
+
+            modeSelect.appendChild(optElement);
+        });
     },
 
     /**
@@ -247,6 +361,43 @@ const App = {
             chord.type,
             chord.mode
         );
+    },
+
+    /**
+     * Get chord type display name
+     */
+    getChordTypeName(type) {
+        const names = {
+            major: 'Major',
+            minor: 'Minor',
+            dominant7: 'Dom7',
+            major7: 'Maj7',
+            minor7: 'Min7',
+            diminished: 'Dim',
+            augmented: 'Aug'
+        };
+        return names[type] || type;
+    },
+
+    /**
+     * Get mode display name
+     */
+    getModeName(mode) {
+        const names = {
+            ionian: 'Ionian',
+            dorian: 'Dorian',
+            phrygian: 'Phrygian',
+            lydian: 'Lydian',
+            mixolydian: 'Mixolydian',
+            aeolian: 'Aeolian',
+            locrian: 'Locrian',
+            lydianDominant: 'Lydian Dominant',
+            altered: 'Altered',
+            wholeHalfDiminished: 'Whole-Half Dim',
+            wholeTone: 'Whole Tone',
+            lydianAugmented: 'Lydian Augmented'
+        };
+        return names[mode] || mode;
     }
 };
 
