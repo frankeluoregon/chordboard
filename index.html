@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChordBoard</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>ChordBoard</h1>
+
+        <div class="global-controls">
+            <div class="input-group">
+                <label for="instrument">Instrument:</label>
+                <select id="instrument">
+                    <option value="guitar">Guitar (6-string)</option>
+                    <option value="bass">Bass (4-string)</option>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label for="num-chords">Number of Chords:</label>
+                <select id="num-chords">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4" selected>4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <span class="legend-marker root-note">R</span>
+                <span>Root Note</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-marker chord-tone">3</span>
+                <span>Chord Tone (shows interval)</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-marker scale-note">2</span>
+                <span>Scale Note (shows scale degree)</span>
+            </div>
+        </div>
+
+        <div id="progression-container"></div>
+    </div>
+
+    <script src="musicTheory.js"></script>
+    <script src="fretboard.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
