@@ -381,7 +381,7 @@ const App = {
         options.forEach((option, index) => {
             const optElement = document.createElement('option');
             optElement.value = option.value;
-            optElement.textContent = `${option.label} - ${option.description}`;
+            optElement.textContent = option.label;
 
             if (option.value === this.chords[chordIndex].mode ||
                 (index === 0 && !this.chords[chordIndex].mode)) {

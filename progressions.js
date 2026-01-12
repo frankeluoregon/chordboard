@@ -60,14 +60,24 @@ const Progressions = {
      */
     getProgressions() {
         return [
-            { name: 'I - IV - V', value: 'I-IV-V', description: 'Classic Rock', use7ths: false },
-            { name: 'I - V - vi - IV', value: 'I-V-vi-IV', description: 'Pop', use7ths: false },
-            { name: 'ii - V - I', value: 'ii-V-I', description: 'Jazz', use7ths: true },
-            { name: 'I - vi - ii - V', value: 'I-vi-ii-V', description: '50s Progression', use7ths: true },
-            { name: 'i - VI - III - VII', value: 'i-VI-III-VII', description: 'Minor Pop', use7ths: false },
-            { name: 'i - iv - v', value: 'i-iv-v', description: 'Minor Blues', use7ths: false },
-            { name: 'I - iii - IV - V', value: 'I-iii-IV-V', description: 'Doo-Wop', use7ths: false },
-            { name: 'vi - IV - I - V', value: 'vi-IV-I-V', description: 'Sensitive', use7ths: false }
+            { name: 'I - IV - V', value: 'I-IV-V', use7ths: false },
+            { name: 'I - V - vi - IV', value: 'I-V-vi-IV', use7ths: false },
+            { name: 'I - IV - vi - V', value: 'I-IV-vi-V', use7ths: false },
+            { name: 'I - vi - IV - V', value: 'I-vi-IV-V', use7ths: false },
+            { name: 'vi - IV - I - V', value: 'vi-IV-I-V', use7ths: false },
+            { name: 'I - iii - IV - V', value: 'I-iii-IV-V', use7ths: false },
+            { name: 'I - IV - I - V', value: 'I-IV-I-V', use7ths: false },
+            { name: 'I - V - IV - V', value: 'I-V-IV-V', use7ths: false },
+            { name: 'I - vi - ii - V', value: 'I-vi-ii-V', use7ths: true },
+            { name: 'ii - V - I', value: 'ii-V-I', use7ths: true },
+            { name: 'iii - vi - ii - V', value: 'iii-vi-ii-V', use7ths: true },
+            { name: 'I - III - IV - iv', value: 'I-III-IV-iv', use7ths: false },
+            { name: 'i - VI - III - VII', value: 'i-VI-III-VII', use7ths: false },
+            { name: 'i - iv - v', value: 'i-iv-v', use7ths: false },
+            { name: 'i - VII - VI - VII', value: 'i-VII-VI-VII', use7ths: false },
+            { name: 'i - iv - VII - III', value: 'i-iv-VII-III', use7ths: false },
+            { name: 'i - VI - VII', value: 'i-VI-VII', use7ths: false },
+            { name: 'i - III - VII - iv', value: 'i-III-VII-iv', use7ths: false }
         ];
     }
 };

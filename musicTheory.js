@@ -22,36 +22,36 @@ const MusicTheory = {
     // Mode options for each chord type
     modeOptions: {
         major: [
-            { value: 'ionian', label: 'Ionian', description: 'natural major scale' },
-            { value: 'lydian', label: 'Lydian', description: 'bright, raised 4th' },
-            { value: 'mixolydian', label: 'Mixolydian', description: 'major with flatted 7th' }
+            { value: 'ionian', label: 'Ionian' },
+            { value: 'lydian', label: 'Lydian' },
+            { value: 'mixolydian', label: 'Mixolydian' }
         ],
         minor: [
-            { value: 'dorian', label: 'Dorian', description: 'jazzy minor with natural 6th' },
-            { value: 'aeolian', label: 'Aeolian', description: 'natural minor' },
-            { value: 'phrygian', label: 'Phrygian', description: 'exotic, Spanish/flamenco flavor' }
+            { value: 'dorian', label: 'Dorian' },
+            { value: 'aeolian', label: 'Aeolian' },
+            { value: 'phrygian', label: 'Phrygian' }
         ],
         dominant7: [
-            { value: 'mixolydian', label: 'Mixolydian', description: 'classic dominant sound' },
-            { value: 'lydianDominant', label: 'Lydian Dominant', description: 'jazzy, sophisticated' },
-            { value: 'altered', label: 'Altered', description: 'outside, tense' }
+            { value: 'mixolydian', label: 'Mixolydian' },
+            { value: 'lydianDominant', label: 'Lydian Dominant' },
+            { value: 'altered', label: 'Altered' }
         ],
         major7: [
-            { value: 'ionian', label: 'Ionian', description: 'pure major 7th sound' },
-            { value: 'lydian', label: 'Lydian', description: 'dreamy, floating quality' }
+            { value: 'ionian', label: 'Ionian' },
+            { value: 'lydian', label: 'Lydian' }
         ],
         minor7: [
-            { value: 'dorian', label: 'Dorian', description: 'best choice for minor 7th' },
-            { value: 'aeolian', label: 'Aeolian', description: 'darker minor 7th' },
-            { value: 'phrygian', label: 'Phrygian', description: 'exotic minor 7th' }
+            { value: 'dorian', label: 'Dorian' },
+            { value: 'aeolian', label: 'Aeolian' },
+            { value: 'phrygian', label: 'Phrygian' }
         ],
         diminished: [
-            { value: 'locrian', label: 'Locrian', description: 'unstable, flat 5' },
-            { value: 'wholeHalfDiminished', label: 'Whole-Half Diminished', description: 'symmetrical 8-note scale' }
+            { value: 'locrian', label: 'Locrian' },
+            { value: 'wholeHalfDiminished', label: 'Whole-Half Diminished' }
         ],
         augmented: [
-            { value: 'wholeTone', label: 'Whole Tone', description: 'all whole steps, ambiguous' },
-            { value: 'lydianAugmented', label: 'Lydian Augmented', description: 'raised 4th and 5th' }
+            { value: 'wholeTone', label: 'Whole Tone' },
+            { value: 'lydianAugmented', label: 'Lydian Augmented' }
         ]
     },
 
