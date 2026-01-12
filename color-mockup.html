@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChordBoard Color Scheme Mockup</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1410;
+            padding: 40px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #f4a460;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .palette-section {
+            background: #2a1f1a;
+            border: 2px solid #3d2f27;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .palette-section h2 {
+            color: #e8905c;
+            margin-bottom: 20px;
+        }
+
+        .color-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .color-swatch {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .swatch-box {
+            height: 80px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .swatch-info {
+            color: #c9a887;
+            font-size: 14px;
+        }
+
+        .swatch-info strong {
+            color: #f4a460;
+        }
+
+        /* Color Palette from Guitar */
+        .dark-brown { background: #3d1810; }
+        .medium-brown { background: #5c2f1f; }
+        .caramel { background: #8d5524; }
+        .amber { background: #d4722e; }
+        .bright-orange { background: #e8905c; }
+        .light-amber { background: #f4a460; }
+        .cream { background: #ffe4b5; }
+        .black { background: #0a0807; }
+        .warm-gray { background: #3d3631; }
+        .accent-gold { background: #d4af37; }
+
+        /* UI Element Examples */
+        .ui-mockup {
+            background: #0a0807;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .mockup-toolbar {
+            background: #2a1f1a;
+            border: 2px solid #3d2f27;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .mockup-title {
+            color: #f4a460;
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+
+        .mockup-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .mockup-btn {
+            padding: 10px 20px;
+            border-radius: 6px;
+            border: 2px solid #5c2f1f;
+            background: #2a1f1a;
+            color: #c9a887;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .mockup-btn.active {
+            background: #8d5524;
+            color: #ffe4b5;
+            border-color: #d4722e;
+        }
+
+        .legend-mockup {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-marker {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .legend-marker.root {
+            background: #8d5524;
+            color: #ffe4b5;
+            border: 3px solid #f4a460;
+            border-radius: 4px;
+        }
+
+        .legend-marker.chord {
+            background: #f4a460;
+            color: #3d1810;
+            border: 3px solid #8d5524;
+            border-radius: 4px;
+        }
+
+        .legend-marker.scale {
+            background: #5c2f1f;
+            color: #ffe4b5;
+            border-radius: 50%;
+        }
+
+        .legend-marker.leading {
+            background: #d4722e;
+            color: #0a0807;
+            border: none;
+            border-radius: 0;
+            clip-path: polygon(20% 0%, 20% 100%, 100% 50%);
+            width: 28px;
+        }
+
+        .legend-text {
+            color: #c9a887;
+            font-size: 14px;
+        }
+
+        .fretboard-mockup {
+            background: #3d1810;
+            border: 2px solid #5c2f1f;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .fretboard-title {
+            color: #f4a460;
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+
+        .fretboard-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 15px;
+            padding: 20px;
+            background: linear-gradient(135deg, #5c2f1f 0%, #3d1810 100%);
+            border-radius: 8px;
+        }
+
+        .fret-marker-example {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+            margin: 0 auto;
+        }
+
+        .export-btn-mockup {
+            background: #8d5524;
+            color: #ffe4b5;
+            border: 2px solid #5c2f1f;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .export-btn-mockup:hover {
+            background: #d4722e;
+            border-color: #8d5524;
+        }
+
+        .notes {
+            background: #2a1f1a;
+            border-left: 4px solid #8d5524;
+            padding: 15px;
+            margin-top: 30px;
+            border-radius: 4px;
+        }
+
+        .notes h3 {
+            color: #f4a460;
+            margin-bottom: 10px;
+        }
+
+        .notes ul {
+            color: #c9a887;
+            margin-left: 20px;
+        }
+
+        .notes li {
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>ChordBoard Color Scheme Mockup</h1>
+        <p style="text-align: center; color: #c9a887; margin-bottom: 30px;">Based on Les Paul Sunburst Guitar</p>
+
+        <!-- Color Palette -->
+        <div class="palette-section">
+            <h2>Color Palette</h2>
+
+            <div class="color-row">
+                <div class="color-swatch">
+                    <div class="swatch-box dark-brown"></div>
+                    <div class="swatch-info">
+                        <strong>Dark Brown</strong><br>
+                        #3d1810<br>
+                        Background, Fretboard
+                    </div>
+                </div>
+                <div class="color-swatch">
+                    <div class="swatch-box medium-brown"></div>
+                    <div class="swatch-info">
+                        <strong>Medium Brown</strong><br>
+                        #5c2f1f<br>
+                        Panels, Borders
+                    </div>
+                </div>
+                <div class="color-swatch">
+                    <div class="swatch-box caramel"></div>
+                    <div class="swatch-info">
+                        <strong>Caramel</strong><br>
+                        #8d5524<br>
+                        Root Notes, Buttons
+                    </div>
+                </div>
+                <div class="color-swatch">
+                    <div class="swatch-box amber"></div>
+                    <div class="swatch-info">
+                        <strong>Amber</strong><br>
+                        #d4722e<br>
+                        Leading Notes, Accents
+                    </div>
+                </div>
+            </div>
+
+            <div class="color-row">
+                <div class="color-swatch">
+                    <div class="swatch-box bright-orange"></div>
+                    <div class="swatch-info">
+                        <strong>Bright Orange</strong><br>
+                        #e8905c<br>
+                        Highlights, Hovers
+                    </div>
+                </div>
+                <div class="color-swatch">
+                    <div class="swatch-box light-amber"></div>
+                    <div class="swatch-info">
+                        <strong>Light Amber</strong><br>
+                        #f4a460<br>
+                        Chord Tones, Headers
+                    </div>
+                </div>
+                <div class="color-swatch">
+                    <div class="swatch-box cream"></div>
+                    <div class="swatch-info">
+                        <strong>Cream</strong><br>
+                        #ffe4b5<br>
+                        Text, Root Text
+                    </div>
+                </div>
+                <div class="color-swatch">
+                    <div class="swatch-box black"></div>
+                    <div class="swatch-info">
+                        <strong>Black</strong><br>
+                        #0a0807<br>
+                        Main Background
+                    </div>
+                </div>
+            </div>
+
+            <div class="color-row">
+                <div class="color-swatch">
+                    <div class="swatch-box warm-gray"></div>
+                    <div class="swatch-info">
+                        <strong>Warm Gray</strong><br>
+                        #3d3631<br>
+                        Secondary Text
+                    </div>
+                </div>
+                <div class="color-swatch">
+                    <div class="swatch-box accent-gold"></div>
+                    <div class="swatch-info">
+                        <strong>Accent Gold</strong><br>
+                        #d4af37<br>
+                        Special Accents
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- UI Mockup -->
+        <div class="ui-mockup">
+            <div class="mockup-toolbar">
+                <div class="mockup-title">ChordBoard</div>
+
+                <div class="mockup-buttons">
+                    <button class="mockup-btn active">Chord Select</button>
+                    <button class="mockup-btn">Progression</button>
+                </div>
+
+                <div class="legend-mockup">
+                    <div class="legend-item">
+                        <span class="legend-marker root">R</span>
+                        <span class="legend-text">Root</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-marker chord">3</span>
+                        <span class="legend-text">Chord Tone</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-marker scale">2</span>
+                        <span class="legend-text">Scale Note</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-marker leading">L</span>
+                        <span class="legend-text">Leading Note</span>
+                    </div>
+                </div>
+
+                <div style="margin-top: 15px;">
+                    <button class="export-btn-mockup">Export to PDF</button>
+                </div>
+            </div>
+
+            <div class="fretboard-mockup">
+                <div class="fretboard-title">Chord 1 - C Major (Ionian)</div>
+                <div class="fretboard-grid">
+                    <div class="fret-marker-example root" style="background: #8d5524; color: #ffe4b5; border: 3px solid #f4a460; border-radius: 4px;">C<sub style="font-size: 0.7em;">R</sub></div>
+                    <div class="fret-marker-example chord" style="background: #f4a460; color: #3d1810; border: 3px solid #8d5524; border-radius: 4px;">E<sub style="font-size: 0.7em;">3</sub></div>
+                    <div class="fret-marker-example scale" style="background: #5c2f1f; color: #ffe4b5; border-radius: 50%;">D<sub style="font-size: 0.7em;">2</sub></div>
+                    <div class="fret-marker-example chord" style="background: #f4a460; color: #3d1810; border: 3px solid #8d5524; border-radius: 4px;">G<sub style="font-size: 0.7em;">5</sub></div>
+                    <div class="fret-marker-example scale" style="background: #5c2f1f; color: #ffe4b5; border-radius: 50%;">F<sub style="font-size: 0.7em;">4</sub></div>
+                    <div class="fret-marker-example leading" style="background: #d4722e; color: #0a0807; border: none; border-radius: 0; clip-path: polygon(20% 0%, 20% 100%, 100% 50%); width: 44px;">L</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Design Notes -->
+        <div class="notes">
+            <h3>Design Notes</h3>
+            <ul>
+                <li><strong>Root Notes:</strong> Caramel (#8d5524) with cream text (#ffe4b5) and light amber border (#f4a460) - represents the dark guitar body</li>
+                <li><strong>Chord Tones:</strong> Light amber (#f4a460) with dark brown text (#3d1810) and caramel border (#8d5524) - represents the bright sunburst center</li>
+                <li><strong>Scale Notes:</strong> Medium brown (#5c2f1f) with cream text (#ffe4b5) - represents the mid-tone areas</li>
+                <li><strong>Leading Notes:</strong> Amber (#d4722e) with black text (#0a0807) - represents the vibrant orange gradient</li>
+                <li><strong>Background:</strong> Deep black (#0a0807) to deep brown (#1a1410) - represents the darkness around the guitar</li>
+                <li><strong>Panels:</strong> Dark brown (#2a1f1a) with medium brown borders (#3d2f27) - represents the wood grain</li>
+                <li><strong>Active Elements:</strong> Caramel (#8d5524) to amber (#d4722e) gradient - represents the sunburst effect</li>
+                <li><strong>Text:</strong> Cream (#ffe4b5) primary, warm beige (#c9a887) secondary - warm, readable tones</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
