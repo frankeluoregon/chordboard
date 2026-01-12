@@ -20,16 +20,53 @@ const App = {
         // Detect mobile and adjust toolbar positioning
         if (this.isMobile()) {
             document.querySelector('.top-bar').classList.add('mobile-static');
+            this.setupMobileScrollBehavior();
         }
 
         // Initialize chord progression with defaults
         this.initializeChords();
+
+        // Show guitar tuning selector by default (since guitar is the default instrument)
+        document.getElementById('guitar-tuning-group').style.display = 'flex';
 
         // Set up event listeners
         this.setupEventListeners();
 
         // Render the initial mode
         this.renderFretboards();
+    },
+
+    /**
+     * Setup mobile scroll behavior to hide/show toolbar
+     */
+    setupMobileScrollBehavior() {
+        let lastScrollTop = 0;
+        let scrollTimeout;
+        const topBar = document.querySelector('.top-bar');
+        const scrollThreshold = 10; // Minimum scroll distance to trigger hide/show
+
+        window.addEventListener('scroll', () => {
+            clearTimeout(scrollTimeout);
+
+            scrollTimeout = setTimeout(() => {
+                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                const scrollDiff = Math.abs(scrollTop - lastScrollTop);
+
+                // Only trigger if scroll difference is significant
+                if (scrollDiff > scrollThreshold) {
+                    if (scrollTop > lastScrollTop && scrollTop > 100) {
+                        // Scrolling down - hide toolbar
+                        topBar.style.transform = 'translateY(-100%)';
+                        topBar.style.transition = 'transform 0.3s ease-in-out';
+                    } else {
+                        // Scrolling up - show toolbar
+                        topBar.style.transform = 'translateY(0)';
+                        topBar.style.transition = 'transform 0.3s ease-in-out';
+                    }
+                    lastScrollTop = scrollTop;
+                }
+            }, 10);
+        }, { passive: true });
     },
 
     /**
@@ -81,6 +118,26 @@ const App = {
         instrumentSelect.addEventListener('change', (e) => {
             this.currentInstrument = e.target.value;
             Fretboard.setInstrument(this.currentInstrument);
+
+            // Show/hide guitar tuning selector
+            const guitarTuningGroup = document.getElementById('guitar-tuning-group');
+            if (this.currentInstrument === 'guitar') {
+                guitarTuningGroup.style.display = 'flex';
+            } else {
+                guitarTuningGroup.style.display = 'none';
+            }
+
+            if (this.currentMode === 'fretboard') {
+                this.renderFretboards();
+            } else {
+                this.renderProgressionDisplay();
+            }
+        });
+
+        // Guitar tuning selector
+        const guitarTuningSelect = document.getElementById('guitar-tuning');
+        guitarTuningSelect.addEventListener('change', (e) => {
+            Fretboard.setGuitarTuning(e.target.value);
             if (this.currentMode === 'fretboard') {
                 this.renderFretboards();
             } else {
@@ -154,7 +211,7 @@ const App = {
             this.progressionQuality = e.target.value;
         });
 
-        // Progression toggles
+        // Progression toggle for leading notes
         document.getElementById('show-leading-notes').addEventListener('change', (e) => {
             this.showLeadingNotes = e.target.checked;
             if (this.currentMode === 'progression') {
@@ -162,28 +219,24 @@ const App = {
             }
         });
 
-        document.getElementById('show-scale-notes').addEventListener('change', (e) => {
-            this.showScaleNotes = e.target.checked;
-            if (this.currentMode === 'progression') {
-                this.renderProgressionDisplay();
+        // Progression selector dropdown
+        const progressionSelect = document.getElementById('progression-select');
+        progressionSelect.addEventListener('change', (e) => {
+            const selectedOption = e.target.options[e.target.selectedIndex];
+            const progression = selectedOption.value;
+
+            if (!progression) return; // Skip if "Select a progression..." is chosen
+
+            const quality = selectedOption.dataset.quality;
+            const use7ths = selectedOption.dataset.use7ths === 'true';
+
+            // Update the quality selector to match the progression
+            if (quality) {
+                document.getElementById('progression-quality').value = quality;
+                this.progressionQuality = quality;
             }
-        });
 
-        // Progression buttons
-        document.querySelectorAll('.progression-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const progression = e.target.dataset.progression;
-                const quality = e.target.dataset.quality;
-                const use7ths = e.target.dataset.use7ths === 'true';
-
-                // Update the quality selector to match the progression
-                if (quality) {
-                    document.getElementById('progression-quality').value = quality;
-                    this.progressionQuality = quality;
-                }
-
-                this.loadProgression(progression, use7ths);
-            });
+            this.loadProgression(progression, use7ths);
         });
 
         // Export to PDF button - now shows orientation selector
@@ -214,8 +267,42 @@ const App = {
         document.getElementById('fretboard-page').classList.toggle('active', mode === 'fretboard');
         document.getElementById('progression-page').classList.toggle('active', mode === 'progression');
 
-        // Show/hide controls
+        // Show/hide controls based on mode
+        const isProgressionMode = mode === 'progression';
         document.getElementById('num-chords-group').style.display = mode === 'fretboard' ? 'flex' : 'none';
+        document.getElementById('progression-key-group').style.display = isProgressionMode ? 'flex' : 'none';
+        document.getElementById('progression-quality-group').style.display = isProgressionMode ? 'flex' : 'none';
+        document.getElementById('show-leading-notes-group').style.display = isProgressionMode ? 'flex' : 'none';
+        document.getElementById('progression-select-group').style.display = isProgressionMode ? 'flex' : 'none';
+
+        // Load first progression when entering progression mode
+        if (isProgressionMode) {
+            const progressionSelect = document.getElementById('progression-select');
+            const hasProgression = this.chords.length > 0 && this.chords[0].progressionName;
+
+            // Only auto-load if no progression is currently loaded
+            if (!hasProgression && progressionSelect.options.length > 1) {
+                // Select the first real progression (index 1, skipping "Select a progression...")
+                progressionSelect.selectedIndex = 1;
+                const firstOption = progressionSelect.options[1];
+                const progression = firstOption.value;
+                const quality = firstOption.dataset.quality;
+                const use7ths = firstOption.dataset.use7ths === 'true';
+
+                // Update quality selector
+                if (quality) {
+                    document.getElementById('progression-quality').value = quality;
+                    this.progressionQuality = quality;
+                }
+
+                this.loadProgression(progression, use7ths);
+            } else if (hasProgression) {
+                // If a progression is already loaded, just render it
+                this.renderProgressionDisplay();
+            }
+        } else {
+            this.renderFretboards();
+        }
     },
 
     /**
@@ -223,6 +310,8 @@ const App = {
      */
     loadProgression(progressionString, use7ths = false) {
         const chords = Progressions.parseProgression(progressionString, this.progressionKey, this.progressionQuality, use7ths);
+        // Mark each chord with the progression name so we know a progression was loaded
+        chords.forEach(chord => chord.progressionName = progressionString);
         this.chords = chords;
         this.numChords = chords.length;
         this.renderProgressionDisplay();
@@ -234,6 +323,25 @@ const App = {
     renderProgressionDisplay() {
         const container = document.getElementById('progression-display');
         container.innerHTML = '';
+
+        // Check if we have a valid progression loaded (not just default chords)
+        const hasProgression = this.chords.length > 0 && this.chords[0].progressionName;
+
+        if (!hasProgression) {
+            // Show placeholder with empty fretboard background
+            const placeholder = document.createElement('div');
+            placeholder.className = 'progression-placeholder';
+            placeholder.innerHTML = `
+                <div class="placeholder-fretboard"></div>
+                <div class="placeholder-content">
+                    <div class="placeholder-arrow">↑</div>
+                    <h2>Select a Chord Progression</h2>
+                    <p>Choose a progression from the dropdown above</p>
+                </div>
+            `;
+            container.appendChild(placeholder);
+            return;
+        }
 
         for (let i = 0; i < this.numChords; i++) {
             const chordSection = this.createProgressionChordSection(i);

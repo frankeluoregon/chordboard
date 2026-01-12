@@ -7,10 +7,23 @@ const Fretboard = {
         bass5: ['G', 'D', 'A', 'E', 'B'],            // 5-string bass (high to low)
         bass6: ['C', 'G', 'D', 'A', 'E', 'B'],       // 6-string bass (high to low)
         ukulele: ['A', 'E', 'C', 'G'],                // Ukulele (high to low, reentrant tuning)
-        mandolin: ['E', 'E', 'A', 'A', 'D', 'D', 'G', 'G'],  // Mandolin (4 courses, paired strings)
+        mandolin: ['E', 'E', 'A', 'A', 'D', 'D', 'G', 'G'],  // Mandolin (4 courses, paired strings, high to low: EADG tuned in 5ths)
         banjo: ['D', 'B', 'G', 'D', 'G']              // 5-string banjo (high to low, with short 5th string)
     },
+    // Guitar alternate tunings
+    guitarTunings: {
+        standard: ['E', 'B', 'G', 'D', 'A', 'E'],    // Standard tuning
+        dropD: ['E', 'B', 'G', 'D', 'A', 'D'],       // Drop D
+        dropC: ['D', 'A', 'F', 'C', 'G', 'C'],       // Drop C
+        openD: ['D', 'A', 'F#', 'D', 'A', 'D'],      // Open D
+        openG: ['D', 'B', 'G', 'D', 'G', 'D'],       // Open G
+        openC: ['E', 'C', 'G', 'C', 'G', 'C'],       // Open C
+        openE: ['E', 'B', 'G#', 'E', 'B', 'E'],      // Open E
+        openAm: ['E', 'C', 'A', 'E', 'A', 'E'],      // Open A Minor
+        dadgad: ['D', 'A', 'G', 'D', 'A', 'D']       // DADGAD
+    },
     currentInstrument: 'guitar',
+    currentGuitarTuning: 'standard',
     tuning: ['E', 'B', 'G', 'D', 'A', 'E'],  // Default to guitar
     numFrets: 12,
     displayFrets: 12,  // For PDF export, can be different from numFrets
@@ -20,7 +33,22 @@ const Fretboard = {
      */
     setInstrument(instrument) {
         this.currentInstrument = instrument;
-        this.tuning = this.tunings[instrument];
+        if (instrument === 'guitar') {
+            // For guitar, use the current guitar tuning
+            this.tuning = this.guitarTunings[this.currentGuitarTuning];
+        } else {
+            this.tuning = this.tunings[instrument];
+        }
+    },
+
+    /**
+     * Set the guitar tuning (only for guitar instrument)
+     */
+    setGuitarTuning(tuningName) {
+        if (this.currentInstrument === 'guitar' && this.guitarTunings[tuningName]) {
+            this.currentGuitarTuning = tuningName;
+            this.tuning = this.guitarTunings[tuningName];
+        }
     },
 
     /**
@@ -32,6 +60,13 @@ const Fretboard = {
     },
 
     /**
+     * Check if this is a mandolin paired string (second string of a course)
+     */
+    isMandolinPairedString(stringIndex) {
+        return this.currentInstrument === 'mandolin' && stringIndex % 2 === 1;
+    },
+
+    /**
      * Create the fretboard HTML structure in a specific container
      */
     createFretboard(containerId) {
@@ -40,6 +75,10 @@ const Fretboard = {
 
         const grid = document.createElement('div');
         grid.className = 'fretboard-grid';
+        // Add mandolin class if needed
+        if (this.currentInstrument === 'mandolin') {
+            grid.classList.add('mandolin-fretboard');
+        }
         // Dynamically set grid columns: label column + (numFrets + 1) for open string and frets
         grid.style.gridTemplateColumns = `60px repeat(${this.numFrets + 1}, 1fr)`;
 
@@ -48,6 +87,10 @@ const Fretboard = {
             // String label
             const label = document.createElement('div');
             label.className = 'string-label';
+            // For mandolin paired strings (odd indices), add special class
+            if (this.isMandolinPairedString(stringIndex)) {
+                label.classList.add('mandolin-paired-string');
+            }
             label.textContent = this.tuning[stringIndex];
             grid.appendChild(label);
 
@@ -55,6 +98,10 @@ const Fretboard = {
             for (let fret = 0; fret <= this.numFrets; fret++) {
                 const cell = document.createElement('div');
                 cell.className = `fret-cell fret-${fret}`;
+                // For mandolin paired strings, add special class
+                if (this.isMandolinPairedString(stringIndex)) {
+                    cell.classList.add('mandolin-paired-string');
+                }
                 cell.dataset.string = stringIndex;
                 cell.dataset.fret = fret;
 
@@ -105,6 +152,11 @@ const Fretboard = {
 
         // Iterate through all positions
         for (let stringIndex = 0; stringIndex < this.tuning.length; stringIndex++) {
+            // For mandolin, skip the paired strings (odd indices) - only show markers on the first string of each course
+            if (this.isMandolinPairedString(stringIndex)) {
+                continue;
+            }
+
             for (let fret = 0; fret <= this.numFrets; fret++) {
                 const note = this.getNoteAtPosition(stringIndex, fret);
                 const cell = container.querySelector(
@@ -135,7 +187,8 @@ const Fretboard = {
                         const noteName = note.replace('#', '<sup>♯</sup>');
                         marker.innerHTML = `<span class="note-name">${noteName}</span><span class="interval">R</span>`;
                     } else if (isLeadingNote) {
-                        marker.textContent = 'L';
+                        // Leading note displays arrow via CSS ::before
+                        marker.innerHTML = '';
                     } else if (isChordTone) {
                         const interval = MusicTheory.getChordIntervalLabel(rootNote, note, chordType);
                         const noteName = note.replace('#', '<sup>♯</sup>');

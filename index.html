@@ -21,24 +21,54 @@
 
                 <div class="legend">
                     <div class="legend-item">
-                        <span class="legend-marker root-note">R</span>
+                        <span class="legend-marker root-note">
+                            <span class="note-name">C</span>
+                            <span class="interval">R</span>
+                        </span>
                         <span>Root</span>
                     </div>
                     <div class="legend-item">
-                        <span class="legend-marker chord-tone">3</span>
+                        <span class="legend-marker chord-tone">
+                            <span class="note-name">E</span>
+                            <span class="interval">3</span>
+                        </span>
                         <span>Chord Tone</span>
                     </div>
                     <div class="legend-item">
-                        <span class="legend-marker scale-note">2</span>
+                        <span class="legend-marker scale-note">
+                            <span class="note-name">D</span>
+                            <span class="interval">2</span>
+                        </span>
                         <span>Scale Note</span>
                     </div>
                     <div class="legend-item leading-note-legend">
-                        <span class="legend-marker leading-note">L</span>
+                        <span class="legend-marker leading-note"></span>
                         <span>Leading Note</span>
                     </div>
                 </div>
 
                 <div class="top-row-controls">
+                    <div class="input-group">
+                        <label for="zoom-slider">Zoom:</label>
+                        <input type="range" id="zoom-slider" min="50" max="150" value="100" step="10">
+                        <span id="zoom-value">100%</span>
+                    </div>
+
+                    <div class="input-group" id="pdf-orientation-group" style="display: none;">
+                        <label for="pdf-orientation">Orientation:</label>
+                        <select id="pdf-orientation">
+                            <option value="landscape">Landscape</option>
+                            <option value="portrait">Portrait</option>
+                        </select>
+                    </div>
+
+                    <button id="export-pdf-btn" class="export-btn">Export to PDF</button>
+                </div>
+            </div>
+
+            <!-- Bottom Row -->
+            <div class="top-bar-row bottom-row">
+                <div class="bottom-left-controls">
                     <div class="input-group">
                         <label for="instrument">Instrument:</label>
                         <select id="instrument">
@@ -52,18 +82,28 @@
                         </select>
                     </div>
 
+                    <div class="input-group" id="guitar-tuning-group" style="display: none;">
+                        <label for="guitar-tuning">Tuning:</label>
+                        <select id="guitar-tuning">
+                            <option value="standard">Standard (EADGBE)</option>
+                            <option value="dropD">Drop D</option>
+                            <option value="dropC">Drop C</option>
+                            <option value="openD">Open D</option>
+                            <option value="openG">Open G</option>
+                            <option value="openC">Open C</option>
+                            <option value="openE">Open E</option>
+                            <option value="openAm">Open A Minor</option>
+                            <option value="dadgad">DADGAD</option>
+                        </select>
+                    </div>
+
                     <div class="input-group" id="chord-select-scale-toggle">
                         <label>
                             <input type="checkbox" id="chord-select-show-scale" checked>
                             Scale Notes
                         </label>
                     </div>
-                </div>
-            </div>
 
-            <!-- Bottom Row -->
-            <div class="top-bar-row bottom-row">
-                <div class="bottom-left-controls">
                     <div class="input-group" id="num-chords-group">
                         <label for="num-chords">Chords:</label>
                         <select id="num-chords">
@@ -78,7 +118,7 @@
                         </select>
                     </div>
 
-                    <div class="input-group">
+                    <div class="input-group" id="num-frets-group">
                         <label for="num-frets">Frets:</label>
                         <select id="num-frets">
                             <option value="5">5</option>
@@ -90,26 +130,66 @@
                             <option value="20">20</option>
                         </select>
                     </div>
-                </div>
 
-                <div class="bottom-center-controls">
-                    <div class="input-group">
-                        <label for="zoom-slider">Zoom:</label>
-                        <input type="range" id="zoom-slider" min="50" max="150" value="100" step="10">
-                        <span id="zoom-value">100%</span>
-                    </div>
-                </div>
-
-                <div class="bottom-right-controls">
-                    <div class="input-group" id="pdf-orientation-group" style="display: none;">
-                        <label for="pdf-orientation">Orientation:</label>
-                        <select id="pdf-orientation">
-                            <option value="landscape">Landscape</option>
-                            <option value="portrait">Portrait</option>
+                    <!-- Progression mode controls -->
+                    <div class="input-group" id="progression-key-group" style="display: none;">
+                        <label for="progression-key-letter">Key:</label>
+                        <select id="progression-key-letter">
+                            <option value="C">C</option>
+                            <option value="D">D</option>
+                            <option value="E">E</option>
+                            <option value="F">F</option>
+                            <option value="G">G</option>
+                            <option value="A">A</option>
+                            <option value="B">B</option>
+                        </select>
+                        <select id="progression-key-accidental">
+                            <option value="">♮</option>
+                            <option value="#">♯</option>
+                            <option value="b">♭</option>
                         </select>
                     </div>
 
-                    <button id="export-pdf-btn" class="export-btn">Export to PDF</button>
+                    <div class="input-group" id="progression-quality-group" style="display: none;">
+                        <label for="progression-quality">Quality:</label>
+                        <select id="progression-quality">
+                            <option value="major">Major</option>
+                            <option value="minor">Minor</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group" id="show-leading-notes-group" style="display: none;">
+                        <label>
+                            <input type="checkbox" id="show-leading-notes" checked>
+                            Leading Notes
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Progression Selector Row (separate row below) -->
+                <div class="input-group progression-select-row" id="progression-select-group" style="display: none;">
+                    <label for="progression-select">Progression:</label>
+                    <select id="progression-select">
+                        <option value="">Select a progression...</option>
+                        <option value="I-IV-V" data-quality="major">I - IV - V</option>
+                        <option value="I-V-vi-IV" data-quality="major">I - V - vi - IV</option>
+                        <option value="I-IV-vi-V" data-quality="major">I - IV - vi - V</option>
+                        <option value="I-vi-IV-V" data-quality="major">I - vi - IV - V</option>
+                        <option value="vi-IV-I-V" data-quality="major">vi - IV - I - V</option>
+                        <option value="I-iii-IV-V" data-quality="major">I - iii - IV - V</option>
+                        <option value="I-IV-I-V" data-quality="major">I - IV - I - V</option>
+                        <option value="I-V-IV-V" data-quality="major">I - V - IV - V</option>
+                        <option value="I-vi-ii-V" data-quality="major" data-use7ths="true">I - vi - ii - V</option>
+                        <option value="ii-V-I" data-quality="major" data-use7ths="true">ii - V - I</option>
+                        <option value="iii-vi-ii-V" data-quality="major" data-use7ths="true">iii - vi - ii - V</option>
+                        <option value="I-III-IV-iv" data-quality="major">I - III - IV - iv</option>
+                        <option value="i-VI-III-VII" data-quality="minor">i - VI - III - VII</option>
+                        <option value="i-iv-v" data-quality="minor">i - iv - v</option>
+                        <option value="i-VII-VI-VII" data-quality="minor">i - VII - VI - VII</option>
+                        <option value="i-iv-VII-III" data-quality="minor">i - iv - VII - III</option>
+                        <option value="i-VI-VII" data-quality="minor">i - VI - VII</option>
+                        <option value="i-III-VII-iv" data-quality="minor">i - III - VII - iv</option>
+                    </select>
                 </div>
             </div>
         </div>
@@ -122,67 +202,6 @@
 
     <!-- Progression Mode -->
     <div id="progression-page" class="page-content">
-        <div class="progression-selector">
-            <h2>Select Progression Type</h2>
-
-            <div class="key-selector">
-                <label for="progression-key-letter">Key:</label>
-                <select id="progression-key-letter">
-                    <option value="C">C</option>
-                    <option value="D">D</option>
-                    <option value="E">E</option>
-                    <option value="F">F</option>
-                    <option value="G">G</option>
-                    <option value="A">A</option>
-                    <option value="B">B</option>
-                </select>
-
-                <select id="progression-key-accidental">
-                    <option value="">♮</option>
-                    <option value="#">♯</option>
-                    <option value="b">♭</option>
-                </select>
-
-                <label for="progression-quality">Quality:</label>
-                <select id="progression-quality">
-                    <option value="major">Major</option>
-                    <option value="minor">Minor</option>
-                </select>
-            </div>
-
-            <div class="progression-toggles">
-                <label>
-                    <input type="checkbox" id="show-leading-notes" checked>
-                    Show Leading Notes
-                </label>
-                <label>
-                    <input type="checkbox" id="show-scale-notes" checked>
-                    Show Scale Notes
-                </label>
-            </div>
-
-            <div class="progression-list">
-                <button class="progression-btn" data-progression="I-IV-V" data-quality="major">I - IV - V</button>
-                <button class="progression-btn" data-progression="I-V-vi-IV" data-quality="major">I - V - vi - IV</button>
-                <button class="progression-btn" data-progression="I-IV-vi-V" data-quality="major">I - IV - vi - V</button>
-                <button class="progression-btn" data-progression="I-vi-IV-V" data-quality="major">I - vi - IV - V</button>
-                <button class="progression-btn" data-progression="vi-IV-I-V" data-quality="major">vi - IV - I - V</button>
-                <button class="progression-btn" data-progression="I-iii-IV-V" data-quality="major">I - iii - IV - V</button>
-                <button class="progression-btn" data-progression="I-IV-I-V" data-quality="major">I - IV - I - V</button>
-                <button class="progression-btn" data-progression="I-V-IV-V" data-quality="major">I - V - IV - V</button>
-                <button class="progression-btn" data-progression="I-vi-ii-V" data-quality="major" data-use7ths="true">I - vi - ii - V</button>
-                <button class="progression-btn" data-progression="ii-V-I" data-quality="major" data-use7ths="true">ii - V - I</button>
-                <button class="progression-btn" data-progression="iii-vi-ii-V" data-quality="major" data-use7ths="true">iii - vi - ii - V</button>
-                <button class="progression-btn" data-progression="I-III-IV-iv" data-quality="major">I - III - IV - iv</button>
-                <button class="progression-btn" data-progression="i-VI-III-VII" data-quality="minor">i - VI - III - VII</button>
-                <button class="progression-btn" data-progression="i-iv-v" data-quality="minor">i - iv - v</button>
-                <button class="progression-btn" data-progression="i-VII-VI-VII" data-quality="minor">i - VII - VI - VII</button>
-                <button class="progression-btn" data-progression="i-iv-VII-III" data-quality="minor">i - iv - VII - III</button>
-                <button class="progression-btn" data-progression="i-VI-VII" data-quality="minor">i - VI - VII</button>
-                <button class="progression-btn" data-progression="i-III-VII-iv" data-quality="minor">i - III - VII - iv</button>
-            </div>
-        </div>
-
         <div id="progression-display"></div>
     </div>
 

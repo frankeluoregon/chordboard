@@ -11,9 +11,14 @@ body {
     padding-top: 80px;
 }
 
-/* Mobile Static Positioning */
+/* Mobile Scroll Behavior */
 .top-bar.mobile-static {
-    position: static;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    will-change: transform;
+    z-index: 1000;
 }
 
 body:has(.top-bar.mobile-static) {
@@ -105,6 +110,21 @@ body:has(.top-bar.mobile-static) {
     display: flex;
     gap: 15px;
     align-items: center;
+}
+
+/* Progression Selector Row */
+.progression-select-row {
+    width: 100%;
+    padding: 10px 20px;
+    background: rgba(31, 24, 19, 0.3);
+    border-top: 1px solid #3d2f27;
+    justify-content: center;
+}
+
+.progression-select-row select {
+    font-size: 1.2em;
+    padding: 8px 16px;
+    min-width: 300px;
 }
 
 .bottom-left-controls {
@@ -263,15 +283,17 @@ body:has(#fretboard-page.active) .legend .leading-note-legend {
 }
 
 .legend-marker {
-    width: 20px;
-    height: 20px;
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
     border: 2px solid #3d2f27;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     font-weight: bold;
-    font-size: 0.7em;
+    font-size: 0.65em;
+    gap: 1px;
 }
 
 .legend-marker.chord-tone {
@@ -288,12 +310,20 @@ body:has(#fretboard-page.active) .legend .leading-note-legend {
 }
 
 .legend-marker.leading-note {
-    background: #d4722e;
-    color: #0a0807;
-    border: none;
-    border-radius: 0;
-    clip-path: polygon(20% 0%, 20% 100%, 100% 50%); /* Triangle */
+    background: #6b7c3a;
+    color: #f4a460;
+    border: 2px solid #5c2f1f;
+    border-radius: 50%;
     width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1em;
+}
+
+.legend-marker.leading-note::before {
+    content: '⮕';
 }
 
 .legend-marker.root-note {
@@ -303,12 +333,25 @@ body:has(#fretboard-page.active) .legend .leading-note-legend {
     border-radius: 3px; /* Square for roots */
 }
 
+.legend-marker .note-name {
+    font-size: 0.95em;
+    font-weight: bold;
+    line-height: 1;
+}
+
+.legend-marker .interval {
+    font-size: 0.65em;
+    font-weight: normal;
+    opacity: 0.85;
+    line-height: 1;
+}
+
 /* Page Content */
 .page-content {
     display: none;
     max-width: 1400px;
     margin: 20px auto;
-    padding: 0 20px;
+    padding: 30px 20px 0 20px;
 }
 
 .page-content.active {
@@ -379,6 +422,15 @@ body:has(#fretboard-page.active) .legend .leading-note-legend {
     padding: 10px;
 }
 
+/* Mandolin paired string label styling - smaller, closer */
+.mandolin-fretboard .string-label.mandolin-paired-string {
+    height: 20px;
+    margin-top: -40px;
+    font-size: 0.8em;
+    padding: 5px;
+    opacity: 0.7;
+}
+
 .fret-cell {
     position: relative;
     height: 60px;
@@ -398,6 +450,12 @@ body:has(#fretboard-page.active) .legend .leading-note-legend {
     height: 2px;
     background: rgba(255, 228, 181, 0.3);
     z-index: 0;
+}
+
+/* Mandolin paired string styling - same string line, closer spacing */
+.mandolin-fretboard .fret-cell.mandolin-paired-string {
+    height: 20px; /* Much smaller height for paired strings */
+    margin-top: -40px; /* Pull up close to the previous string */
 }
 
 .fret-cell:first-of-type {
@@ -479,21 +537,40 @@ body:has(#fretboard-page.active) .legend .leading-note-legend {
 }
 
 .fret-marker.leading-note {
-    background: #d4722e;
-    color: #0a0807;
-    border: none;
-    border-radius: 0;
-    clip-path: polygon(20% 0%, 20% 100%, 100% 50%); /* Triangle shifted right */
+    background: #6b7c3a;
+    color: #f4a460;
+    border: 2px solid #5c2f1f;
+    border-radius: 50%;
     width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5em;
+    position: relative;
+    top: -2px;
+}
+
+.fret-marker.leading-note::before {
+    content: '⮕';
 }
 
 .fret-marker.leading-chord-tone {
-    background: #f4a460;
-    color: #3d1810;
-    border: 2px solid #8d5524;
-    border-radius: 0;
-    clip-path: polygon(0% 20%, 0% 80%, 60% 80%, 60% 100%, 100% 50%, 60% 0%, 60% 20%); /* House shape pointing right */
+    background: #3d2f27;
+    color: #d4a574;
+    border: 2px solid #5c2f1f;
+    border-radius: 50%;
     width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5em;
+}
+
+.fret-marker.leading-chord-tone::before {
+    content: '➜';
+    font-size: 0.8em;
 }
 
 .fret-marker.root {
@@ -518,6 +595,11 @@ body:has(#fretboard-page.active) .legend .leading-note-legend {
     font-weight: bold;
 }
 
+/* Move fret numbers and inlays down on mandolin for more spacing */
+.mandolin-fretboard .fret-number {
+    bottom: -50px;
+}
+
 .fret-inlay {
     position: absolute;
     bottom: -60px;
@@ -525,6 +607,10 @@ body:has(#fretboard-page.active) .legend .leading-note-legend {
     height: 12px;
     background: #d4a574;
     border-radius: 50%;
+}
+
+.mandolin-fretboard .fret-inlay {
+    bottom: -70px;
 }
 
 /* Progression Mode */
@@ -625,10 +711,128 @@ body:has(#fretboard-page.active) .legend .leading-note-legend {
     transition: transform 0.2s ease;
 }
 
+/* Progression Placeholder */
+.progression-placeholder {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 500px;
+    margin: 40px 0;
+    border: 2px dashed #5c2f1f;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.placeholder-fretboard {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    opacity: 0.75;
+    background:
+        /* Horizontal fret lines */
+        repeating-linear-gradient(
+            to bottom,
+            transparent,
+            transparent calc(100% / 7 - 2px),
+            #5c2f1f calc(100% / 7 - 2px),
+            #5c2f1f calc(100% / 7)
+        ),
+        /* Vertical string lines */
+        repeating-linear-gradient(
+            to right,
+            transparent,
+            transparent calc(100% / 7 - 1px),
+            #3d2f27 calc(100% / 7 - 1px),
+            #3d2f27 calc(100% / 7)
+        ),
+        /* Base fretboard color */
+        linear-gradient(to bottom, #1a1410, #0f0b09);
+    /* Add fret markers using radial gradients */
+    background-image:
+        radial-gradient(circle, #5c2f1f 6px, transparent 6px),
+        radial-gradient(circle, #5c2f1f 6px, transparent 6px),
+        repeating-linear-gradient(
+            to bottom,
+            transparent,
+            transparent calc(100% / 7 - 2px),
+            #5c2f1f calc(100% / 7 - 2px),
+            #5c2f1f calc(100% / 7)
+        ),
+        repeating-linear-gradient(
+            to right,
+            transparent,
+            transparent calc(100% / 7 - 1px),
+            #3d2f27 calc(100% / 7 - 1px),
+            #3d2f27 calc(100% / 7)
+        ),
+        linear-gradient(to bottom, #1a1410, #0f0b09);
+    background-position:
+        30% 50%,
+        60% 50%,
+        0 0,
+        0 0,
+        0 0;
+    background-size:
+        20px 20px,
+        20px 20px,
+        100% 100%,
+        100% 100%,
+        100% 100%;
+    background-repeat: no-repeat;
+}
+
+.placeholder-content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 40px;
+    background: rgba(10, 8, 7, 0.85);
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.placeholder-arrow {
+    font-size: 3em;
+    color: #f4a460;
+    margin-bottom: 20px;
+    animation: bounce 2s ease-in-out infinite;
+}
+
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+.progression-placeholder h2 {
+    color: #f4a460;
+    font-size: 1.8em;
+    margin-bottom: 10px;
+}
+
+.progression-placeholder p {
+    color: #c9a887;
+    font-size: 1.1em;
+}
+
 /* Mobile Responsive */
 @media (max-width: 768px) {
     body {
         padding-top: 20px;
+    }
+
+    .page-content {
+        padding: 0 20px;
     }
 
     .top-bar-content {
