@@ -639,7 +639,7 @@ const App = {
      */
     async exportToPDF() {
         const { jsPDF } = window.jspdf;
-        const pdf = new jsPDF('p', 'mm', 'a4');
+        const pdf = new jsPDF('l', 'mm', 'a4');
 
         if (this.chords.length === 0) {
             alert('No fretboards to export');
@@ -652,7 +652,7 @@ const App = {
         canvas.height = 450;  // Increased from 400 to give room for fret numbers
 
         let yPosition = 20;
-        const pageHeight = 297;
+        const pageHeight = 210;
         const sectionHeight = 70;
 
         for (let i = 0; i < this.chords.length; i++) {
