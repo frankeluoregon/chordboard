@@ -102,6 +102,11 @@ const App = {
                 this.loadProgression(progression);
             });
         });
+
+        // Export to PDF button
+        document.getElementById('export-pdf-btn').addEventListener('click', () => {
+            this.exportToPDF();
+        });
     },
 
     /**
@@ -148,11 +153,13 @@ const App = {
         setTimeout(() => {
             for (let i = 0; i < this.numChords; i++) {
                 const chord = this.chords[i];
+                const nextChordRoot = i < this.numChords - 1 ? this.chords[i + 1].root : null;
                 Fretboard.renderFretboard(
                     `prog-fretboard-${i}`,
                     chord.root,
                     chord.type,
-                    chord.mode
+                    chord.mode,
+                    nextChordRoot
                 );
             }
         }, 10);
@@ -398,6 +405,233 @@ const App = {
             lydianAugmented: 'Lydian Augmented'
         };
         return names[mode] || mode;
+    },
+
+    /**
+     * Draw a fretboard on canvas for PDF export
+     */
+    drawFretboardOnCanvas(canvas, chord, chordLabel, nextChordRoot) {
+        const ctx = canvas.getContext('2d');
+        const width = canvas.width;
+        const height = canvas.height;
+
+        // Clear canvas with white background
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, width, height);
+
+        // Draw label
+        ctx.fillStyle = '#000000';
+        ctx.font = 'bold 24px Arial';
+        ctx.fillText(chordLabel, 20, 40);
+
+        const fretboardTop = 60;
+        const fretboardHeight = height - 100;
+        const fretboardWidth = width - 100;
+        const numStrings = Fretboard.tuning.length;
+        const numFrets = 12;
+        const stringSpacing = fretboardHeight / (numStrings - 1);
+        const fretSpacing = fretboardWidth / numFrets;
+
+        // Draw strings (horizontal lines)
+        ctx.strokeStyle = '#666666';
+        ctx.lineWidth = 1;
+        for (let i = 0; i < numStrings; i++) {
+            const y = fretboardTop + i * stringSpacing;
+            ctx.beginPath();
+            ctx.moveTo(50, y);
+            ctx.lineTo(50 + fretboardWidth, y);
+            ctx.stroke();
+        }
+
+        // Draw frets (vertical lines)
+        ctx.strokeStyle = '#8B7355';
+        for (let i = 0; i <= numFrets; i++) {
+            const x = 50 + i * fretSpacing;
+            ctx.lineWidth = i === 0 ? 6 : 2; // Wider nut
+            ctx.beginPath();
+            ctx.moveTo(x, fretboardTop);
+            ctx.lineTo(x, fretboardTop + fretboardHeight);
+            ctx.stroke();
+        }
+
+        // Draw fret numbers (lower and 25% larger)
+        ctx.fillStyle = '#000000';
+        ctx.font = '15px Arial'; // 25% larger than 12px
+        ctx.textAlign = 'center';
+        for (let i = 1; i <= numFrets; i++) {
+            const x = 50 + i * fretSpacing - fretSpacing / 2;
+            ctx.fillText(i.toString(), x, fretboardTop + fretboardHeight + 30); // Lower position
+        }
+
+        // Get chord and scale notes
+        const chordNotes = MusicTheory.getChordNotes(chord.root, chord.type);
+        const scaleNotes = MusicTheory.getScaleNotes(chord.root, chord.mode);
+
+        // Draw note markers
+        for (let stringIndex = 0; stringIndex < numStrings; stringIndex++) {
+            for (let fret = 0; fret <= numFrets; fret++) {
+                const note = Fretboard.getNoteAtPosition(stringIndex, fret);
+                const isChordTone = chordNotes.some(n => MusicTheory.areNotesEqual(note, n));
+                const isScaleNote = scaleNotes.some(n => MusicTheory.areNotesEqual(note, n));
+                const isRoot = MusicTheory.areNotesEqual(note, chord.root);
+                // Leading note is a half step below the next chord's root
+                const leadingNote = nextChordRoot ? MusicTheory.transposeNote(nextChordRoot, -1) : null;
+                const isLeadingNote = leadingNote && MusicTheory.areNotesEqual(note, leadingNote);
+
+                if (isChordTone || isScaleNote || isLeadingNote) {
+                    const x = 50 + (fret === 0 ? 0 : fret * fretSpacing - fretSpacing / 2);
+                    const y = fretboardTop + stringIndex * stringSpacing;
+                    const size = 14;
+
+                    // Determine shape and colors
+                    let fillColor, strokeColor, lineWidth, shape, textColor;
+
+                    if (isRoot) {
+                        fillColor = '#007030';
+                        strokeColor = '#FEE11A';
+                        textColor = '#FEE11A';
+                        lineWidth = 3;
+                        shape = 'square';
+                    } else if (isLeadingNote && isChordTone) {
+                        fillColor = '#FEE11A';
+                        strokeColor = '#007030';
+                        textColor = '#007030';
+                        lineWidth = 2;
+                        shape = 'pentagon';
+                    } else if (isLeadingNote && !isChordTone) {
+                        fillColor = '#7FA925';
+                        strokeColor = '#6A8E1F';
+                        textColor = '#000000';
+                        lineWidth = 2;
+                        shape = 'triangle';
+                    } else if (isChordTone) {
+                        fillColor = '#FEE11A';
+                        strokeColor = '#FEE11A';
+                        textColor = '#007030';
+                        lineWidth = 2;
+                        shape = 'square';
+                    } else {
+                        fillColor = '#FFFFFF';
+                        strokeColor = '#000000';
+                        textColor = '#000000';
+                        lineWidth = 2;
+                        shape = 'circle';
+                    }
+
+                    ctx.beginPath();
+
+                    // Draw shape
+                    if (shape === 'square') {
+                        ctx.rect(x - size, y - size, size * 2, size * 2);
+                    } else if (shape === 'circle') {
+                        ctx.arc(x, y, size, 0, 2 * Math.PI);
+                    } else if (shape === 'triangle') {
+                        // Right-pointing triangle (shifted right)
+                        const shift = size * 0.3;
+                        ctx.moveTo(x - size + shift, y - size);
+                        ctx.lineTo(x - size + shift, y + size);
+                        ctx.lineTo(x + size * 1.2, y);
+                        ctx.closePath();
+                    } else if (shape === 'pentagon') {
+                        // Right-pointing house shape (square with triangular point)
+                        const w = size * 1.2;
+                        const h = size * 1.4;
+                        // Left side rectangle
+                        ctx.moveTo(x - w, y - h * 0.4);
+                        ctx.lineTo(x - w, y + h * 0.4);
+                        ctx.lineTo(x + w * 0.2, y + h * 0.4);
+                        // Triangle point
+                        ctx.lineTo(x + w * 0.2, y + h * 0.7);
+                        ctx.lineTo(x + w, y);
+                        ctx.lineTo(x + w * 0.2, y - h * 0.7);
+                        ctx.lineTo(x + w * 0.2, y - h * 0.4);
+                        ctx.closePath();
+                    }
+
+                    ctx.fillStyle = fillColor;
+                    ctx.fill();
+                    ctx.strokeStyle = strokeColor;
+                    ctx.lineWidth = lineWidth;
+                    ctx.stroke();
+
+                    // Draw text
+                    ctx.fillStyle = textColor;
+                    ctx.font = 'bold 14px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+
+                    let label;
+                    if (isRoot) {
+                        label = 'R';
+                    } else if (isLeadingNote && isChordTone) {
+                        label = MusicTheory.getChordIntervalLabel(chord.root, note, chord.type);
+                    } else if (isLeadingNote && !isChordTone) {
+                        label = 'L';
+                    } else if (isChordTone) {
+                        label = MusicTheory.getChordIntervalLabel(chord.root, note, chord.type);
+                    } else {
+                        label = MusicTheory.getScaleDegreeLabel(chord.root, note, chord.mode);
+                    }
+                    ctx.fillText(label, x, y);
+                }
+            }
+        }
+    },
+
+    /**
+     * Export current fretboards to PDF
+     */
+    async exportToPDF() {
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF('p', 'mm', 'a4');
+
+        if (this.chords.length === 0) {
+            alert('No fretboards to export');
+            return;
+        }
+
+        // Create a hidden canvas
+        const canvas = document.createElement('canvas');
+        canvas.width = 1200;
+        canvas.height = 400;
+
+        let yPosition = 20;
+        const pageHeight = 297;
+        const sectionHeight = 70;
+
+        for (let i = 0; i < this.chords.length; i++) {
+            const chord = this.chords[i];
+            const nextChordRoot = i < this.chords.length - 1 ? this.chords[i + 1].root : null;
+
+            // Create chord label
+            const chordLabel = this.currentMode === 'progression' && chord.numeral
+                ? `${chord.numeral} - ${chord.root} ${this.getChordTypeName(chord.type)} (${this.getModeName(chord.mode)})`
+                : `Chord ${i + 1} - ${chord.root} ${this.getChordTypeName(chord.type)} (${this.getModeName(chord.mode)})`;
+
+            // Draw fretboard on canvas
+            this.drawFretboardOnCanvas(canvas, chord, chordLabel, nextChordRoot);
+
+            // Check if we need a new page
+            if (i > 0 && yPosition + sectionHeight > pageHeight - 20) {
+                pdf.addPage();
+                yPosition = 20;
+            }
+
+            // Add canvas to PDF
+            const imgData = canvas.toDataURL('image/png');
+            const imgWidth = 170;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+            pdf.addImage(imgData, 'PNG', 20, yPosition, imgWidth, imgHeight);
+            yPosition += imgHeight + 10;
+        }
+
+        // Generate filename
+        const filename = this.currentMode === 'fretboard'
+            ? 'chordboard-fretboards.pdf'
+            : 'chordboard-progression.pdf';
+
+        pdf.save(filename);
     }
 };
 

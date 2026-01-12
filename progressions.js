@@ -1,24 +1,24 @@
 // Progression Module
 const Progressions = {
-    // Roman numeral to scale degree mapping
+    // Roman numeral to scale degree mapping (using 7th chords)
     romanNumerals: {
         major: {
-            'I': { degree: 0, type: 'major', mode: 'ionian' },
-            'ii': { degree: 1, type: 'minor', mode: 'dorian' },
-            'iii': { degree: 2, type: 'minor', mode: 'phrygian' },
-            'IV': { degree: 3, type: 'major', mode: 'lydian' },
-            'V': { degree: 4, type: 'major', mode: 'mixolydian' },
-            'vi': { degree: 5, type: 'minor', mode: 'aeolian' },
+            'I': { degree: 0, type: 'major7', mode: 'ionian' },
+            'ii': { degree: 1, type: 'minor7', mode: 'dorian' },
+            'iii': { degree: 2, type: 'minor7', mode: 'phrygian' },
+            'IV': { degree: 3, type: 'major7', mode: 'lydian' },
+            'V': { degree: 4, type: 'dominant7', mode: 'mixolydian' },
+            'vi': { degree: 5, type: 'minor7', mode: 'aeolian' },
             'vii°': { degree: 6, type: 'diminished', mode: 'locrian' }
         },
         minor: {
-            'i': { degree: 0, type: 'minor', mode: 'aeolian' },
+            'i': { degree: 0, type: 'minor7', mode: 'aeolian' },
             'ii°': { degree: 1, type: 'diminished', mode: 'locrian' },
-            'III': { degree: 2, type: 'major', mode: 'ionian' },
-            'iv': { degree: 3, type: 'minor', mode: 'dorian' },
-            'v': { degree: 4, type: 'minor', mode: 'phrygian' },
-            'VI': { degree: 5, type: 'major', mode: 'lydian' },
-            'VII': { degree: 6, type: 'major', mode: 'mixolydian' }
+            'III': { degree: 2, type: 'major7', mode: 'ionian' },
+            'iv': { degree: 3, type: 'minor7', mode: 'dorian' },
+            'v': { degree: 4, type: 'minor7', mode: 'phrygian' },
+            'VI': { degree: 5, type: 'major7', mode: 'lydian' },
+            'VII': { degree: 6, type: 'dominant7', mode: 'mixolydian' }
         }
     },
 

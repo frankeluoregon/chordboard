@@ -87,7 +87,7 @@ const Fretboard = {
     /**
      * Update the fretboard with note markers
      */
-    updateFretboard(containerId, rootNote, chordType, scaleType) {
+    updateFretboard(containerId, rootNote, chordType, scaleType, nextChordRoot = null) {
         const container = document.getElementById(containerId);
         const chordNotes = MusicTheory.getChordNotes(rootNote, chordType);
         const scaleNotes = MusicTheory.getScaleNotes(rootNote, scaleType);
@@ -112,9 +112,12 @@ const Fretboard = {
                     MusicTheory.areNotesEqual(note, scaleNote)
                 );
                 const isRoot = MusicTheory.areNotesEqual(note, rootNote);
+                // Leading note is a half step below the next chord's root
+                const leadingNote = nextChordRoot ? MusicTheory.transposeNote(nextChordRoot, -1) : null;
+                const isLeadingNote = leadingNote && MusicTheory.areNotesEqual(note, leadingNote);
 
-                // Show markers for chord tones or scale notes
-                if (isChordTone || isScaleNote) {
+                // Show markers for chord tones, scale notes, or leading notes
+                if (isChordTone || isScaleNote || isLeadingNote) {
                     const marker = document.createElement('div');
                     marker.className = 'fret-marker';
 
@@ -122,6 +125,10 @@ const Fretboard = {
                     let displayText;
                     if (isRoot) {
                         displayText = 'R';
+                    } else if (isLeadingNote && isChordTone) {
+                        displayText = MusicTheory.getChordIntervalLabel(rootNote, note, chordType);
+                    } else if (isLeadingNote && !isChordTone) {
+                        displayText = 'L';
                     } else if (isChordTone) {
                         displayText = MusicTheory.getChordIntervalLabel(rootNote, note, chordType);
                     } else if (isScaleNote) {
@@ -130,12 +137,16 @@ const Fretboard = {
 
                     marker.textContent = displayText;
 
-                    // Apply styling - priority: Root > Chord Tone > Scale Note
+                    // Apply styling - priority: Root > Leading+Chord > Leading Note > Chord Tone > Scale Note
                     if (isRoot) {
                         marker.classList.add('root');
                         if (isChordTone) {
                             marker.classList.add('chord-tone');
                         }
+                    } else if (isLeadingNote && isChordTone) {
+                        marker.classList.add('leading-chord-tone');
+                    } else if (isLeadingNote && !isChordTone) {
+                        marker.classList.add('leading-note');
                     } else if (isChordTone) {
                         marker.classList.add('chord-tone');
                     } else if (isScaleNote) {
@@ -151,8 +162,8 @@ const Fretboard = {
     /**
      * Render a complete fretboard (create + update)
      */
-    renderFretboard(containerId, rootNote, chordType, scaleType) {
+    renderFretboard(containerId, rootNote, chordType, scaleType, nextChordRoot = null) {
         this.createFretboard(containerId);
-        this.updateFretboard(containerId, rootNote, chordType, scaleType);
+        this.updateFretboard(containerId, rootNote, chordType, scaleType, nextChordRoot);
     }
 };

@@ -114,6 +114,28 @@ body {
     min-width: 80px;
 }
 
+.export-btn {
+    padding: 6px 16px;
+    background: #007030;
+    color: white;
+    border: 2px solid #005020;
+    border-radius: 6px;
+    font-size: 0.9em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    white-space: nowrap;
+}
+
+.export-btn:hover {
+    background: #005020;
+    transform: translateY(-1px);
+}
+
+.export-btn:active {
+    transform: translateY(0);
+}
+
 /* Legend */
 .legend {
     position: fixed;
@@ -150,19 +172,31 @@ body {
 }
 
 .legend-marker.chord-tone {
-    background: #007030;
-    color: white;
+    background: #FEE11A;
+    color: #007030;
+    border-radius: 3px; /* Square */
 }
 
 .legend-marker.scale-note {
-    background: #808080;
-    color: white;
+    background: #BFBFBF;
+    color: #333;
+    border-radius: 50%; /* Circle */
+}
+
+.legend-marker.leading-note {
+    background: #7FA925;
+    color: #000000;
+    border: 2px solid #6A8E1F;
+    border-radius: 0;
+    clip-path: polygon(20% 0%, 20% 100%, 100% 50%); /* Triangle */
+    width: 24px;
 }
 
 .legend-marker.root-note {
-    background: #ffd93d;
-    border-width: 2px;
-    color: #333;
+    background: #007030;
+    border: 2px solid #FEE11A;
+    color: #FEE11A;
+    border-radius: 3px; /* Square for roots */
 }
 
 /* Page Content */
@@ -236,20 +270,32 @@ body {
 .fret-cell {
     position: relative;
     height: 60px;
-    border-right: 3px solid #654321;
+    border-right: 3px solid #8B7355;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
+.fret-cell::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 2px;
+    background: rgba(255, 255, 255, 0.5);
+    z-index: 0;
+}
+
 .fret-cell:first-of-type {
-    border-left: 5px solid #333;
+    border-left: 5px solid #8B7355;
 }
 
 .fret-cell.fret-0 {
     background: #a0826d;
-    border-left: 5px solid #333;
-    border-right: 3px solid #333;
+    border-left: 5px solid #8B7355;
+    border-right: 3px solid #8B7355;
 }
 
 .fret-marker {
@@ -264,6 +310,8 @@ body {
     cursor: pointer;
     transition: transform 0.2s;
     border: 2px solid transparent;
+    position: relative;
+    z-index: 1;
 }
 
 .fret-marker:hover {
@@ -271,27 +319,49 @@ body {
 }
 
 .fret-marker.chord-tone {
-    background: #007030;
-    color: white;
-    border-color: #005020;
+    background: #FEE11A;
+    color: #007030;
+    border-color: #FEE11A;
+    border-radius: 4px; /* Square for chord tones */
 }
 
 .fret-marker.scale-note {
-    background: #808080;
-    color: white;
-    border-color: #606060;
+    background: #BFBFBF;
+    color: #333;
+    border-color: #999999;
+    border-radius: 50%; /* Circle for scale notes */
+}
+
+.fret-marker.leading-note {
+    background: #7FA925;
+    color: #000000;
+    border: 2px solid #6A8E1F;
+    border-radius: 0;
+    clip-path: polygon(20% 0%, 20% 100%, 100% 50%); /* Triangle shifted right */
+    width: 36px;
+}
+
+.fret-marker.leading-chord-tone {
+    background: #FEE11A;
+    color: #007030;
+    border: 2px solid #007030;
+    border-radius: 0;
+    clip-path: polygon(0% 20%, 0% 80%, 60% 80%, 60% 100%, 100% 50%, 60% 0%, 60% 20%); /* House shape pointing right */
+    width: 36px;
 }
 
 .fret-marker.root {
-    background: #ffd93d;
-    color: #333;
-    border: 3px solid #ff9500;
+    background: #007030;
+    color: #FEE11A;
+    border: 3px solid #FEE11A;
     font-weight: 900;
 }
 
 .fret-marker.chord-tone.root {
-    background: #ffd93d;
-    border: 3px solid #007030;
+    background: #007030;
+    color: #FEE11A;
+    border: 3px solid #FEE11A;
+    border-radius: 4px;
 }
 
 .fret-number {
