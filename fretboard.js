@@ -129,17 +129,17 @@ const Fretboard = {
                     // Determine what to display
                     if (isRoot) {
                         const noteName = note.replace('#', '<sup>♯</sup>');
-                        marker.innerHTML = `${noteName}<sub>R</sub>`;
+                        marker.innerHTML = `<span class="note-name">${noteName}</span><span class="interval">R</span>`;
                     } else if (isLeadingNote) {
                         marker.textContent = 'L';
                     } else if (isChordTone) {
                         const interval = MusicTheory.getChordIntervalLabel(rootNote, note, chordType);
                         const noteName = note.replace('#', '<sup>♯</sup>');
-                        marker.innerHTML = `${noteName}<sub>${interval}</sub>`;
+                        marker.innerHTML = `<span class="note-name">${noteName}</span><span class="interval">${interval}</span>`;
                     } else if (isScaleNote) {
                         const degree = MusicTheory.getScaleDegreeLabel(rootNote, note, scaleType);
                         const noteName = note.replace('#', '<sup>♯</sup>');
-                        marker.innerHTML = `${noteName}<sub>${degree}</sub>`;
+                        marker.innerHTML = `<span class="note-name">${noteName}</span><span class="interval">${degree}</span>`;
                     }
 
                     // Apply styling - priority: Root > Leading Note > Chord Tone > Scale Note
