@@ -228,7 +228,7 @@ const MIDIPlayer = {
                 } else if (playbackMode === 'strum') {
                     this.playChordStrum(chord, instrument, chordDuration * 0.9);
                 } else if (playbackMode === 'arpeggio') {
-                    this.playChordArpeggio(chord, instrument, chordDuration * 0.9);
+                    this.playChordArpeggio(chord, instrument, chordDuration * 2.7);
                 }
             }, delay * 1000);
         }

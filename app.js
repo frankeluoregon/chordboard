@@ -32,6 +32,12 @@ const App = {
         // Set up event listeners
         this.setupEventListeners();
 
+        // Set initial padding based on menu bar height
+        this.updatePadding();
+
+        // Update padding on window resize
+        window.addEventListener('resize', () => this.updatePadding());
+
         // Render the initial mode
         this.renderFretboards();
     },
@@ -340,6 +346,24 @@ const App = {
         } else {
             this.renderFretboards();
         }
+
+        // Update padding after controls visibility changes (affects menu height)
+        setTimeout(() => this.updatePadding(), 0);
+    },
+
+    /**
+     * Update padding based on menu bar height
+     */
+    updatePadding() {
+        const topBar = document.querySelector('.top-bar');
+        if (!topBar) return;
+
+        // Get the actual height of the top bar
+        const topBarHeight = topBar.offsetHeight;
+        const paddingValue = topBarHeight + 20;
+
+        // Set CSS variable for padding
+        document.documentElement.style.setProperty('--topbar-offset', `${paddingValue}px`);
     },
 
     /**
@@ -399,6 +423,13 @@ const App = {
                     this.showLeadingNotes,  // Use toggle value
                     this.showScaleNotes     // Use toggle value
                 );
+
+                // Add playback controls overlay AFTER fretboard is rendered
+                const fretboardContainer = document.getElementById(`prog-fretboard-${i}`);
+                if (fretboardContainer) {
+                    const playbackContainer = this.createPlaybackControls(i, 'prog');
+                    fretboardContainer.appendChild(playbackContainer);
+                }
             }
         }, 10);
     },
@@ -423,23 +454,7 @@ const App = {
         fretboardContainer.className = 'fretboard-container';
         section.appendChild(fretboardContainer);
 
-        // Create playback button with flyout - positioned absolutely
-        
-        // Playback overlay anchored to the fretboard's top-right
-        const playbackContainer = this.createPlaybackControls(index, 'prog');
-        
-        // Make the fretboard container the positioning context
-        fretboardContainer.style.position = 'relative';
-        
-        // Top-right overlay
-        playbackContainer.style.position = 'absolute';
-        playbackContainer.style.top = '8px';
-        playbackContainer.style.right = '8px';
-        playbackContainer.style.zIndex = '10';
-        
-        // Append overlay inside the fretboard
-        fretboardContainer.appendChild(playbackContainer);
-
+        // Playback controls will be added after fretboard is rendered
         return section;
     },
 
@@ -519,18 +534,6 @@ const App = {
         rootAccidentalGroup.classList.add('compact-group');
         controls.appendChild(rootAccidentalGroup);
 
-        
-        // Make the fretboard container a positioning context
-        fretboardContainer.style.position = 'relative';
-        
-        // Playback overlay anchored to the fretboard's top-right
-        const playbackContainer = this.createPlaybackControls(index, 'fretboard');
-        playbackContainer.style.position = 'absolute';
-        playbackContainer.style.top = '8px';
-        playbackContainer.style.right = '8px';
-        playbackContainer.style.zIndex = '10';
-        fretboardContainer.appendChild(playbackContainer);
-
         // Chord type selector
         const chordGroup = this.createSelect(
             `chord-type-${index}`,
@@ -577,10 +580,14 @@ const App = {
         fretboardContainer.className = 'fretboard-container';
         section.appendChild(fretboardContainer);
 
-        // Populate mode options and render
+        // Populate mode options and render, then add playback controls
         setTimeout(() => {
             this.updateModeOptions(index);
             this.updateFretboard(index);
+
+            // Add playback controls overlay AFTER fretboard is rendered
+            const playbackContainer = this.createPlaybackControls(index, 'fretboard');
+            fretboardContainer.appendChild(playbackContainer);
         }, 0);
 
         return section;
