@@ -17,12 +17,6 @@ const App = {
      * Initialize the application
      */
     init() {
-        // Detect mobile and adjust toolbar positioning
-        if (this.isMobile()) {
-            document.querySelector('.top-bar').classList.add('mobile-static');
-            this.setupMobileScrollBehavior();
-        }
-
         // Initialize chord progression with defaults
         this.initializeChords();
 
@@ -34,47 +28,6 @@ const App = {
 
         // Render the initial mode
         this.renderFretboards();
-    },
-
-    /**
-     * Setup mobile scroll behavior to hide/show toolbar
-     */
-    setupMobileScrollBehavior() {
-        let lastScrollTop = 0;
-        let scrollTimeout;
-        const topBar = document.querySelector('.top-bar');
-        const scrollThreshold = 10; // Minimum scroll distance to trigger hide/show
-
-        window.addEventListener('scroll', () => {
-            clearTimeout(scrollTimeout);
-
-            scrollTimeout = setTimeout(() => {
-                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                const scrollDiff = Math.abs(scrollTop - lastScrollTop);
-
-                // Only trigger if scroll difference is significant
-                if (scrollDiff > scrollThreshold) {
-                    if (scrollTop > lastScrollTop && scrollTop > 100) {
-                        // Scrolling down - hide toolbar
-                        topBar.style.transform = 'translateY(-100%)';
-                        topBar.style.transition = 'transform 0.3s ease-in-out';
-                    } else {
-                        // Scrolling up - show toolbar
-                        topBar.style.transform = 'translateY(0)';
-                        topBar.style.transition = 'transform 0.3s ease-in-out';
-                    }
-                    lastScrollTop = scrollTop;
-                }
-            }, 10);
-        }, { passive: true });
-    },
-
-    /**
-     * Detect if device is mobile
-     */
-    isMobile() {
-        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-            || window.innerWidth <= 768;
     },
 
     /**
@@ -410,27 +363,33 @@ const App = {
         const section = document.createElement('div');
         section.className = 'chord-section';
 
+        // Create header container with label and playback button
+        const headerContainer = document.createElement('div');
+        headerContainer.className = 'chord-header';
+        headerContainer.style.display = 'flex';
+        headerContainer.style.justifyContent = 'space-between';
+        headerContainer.style.alignItems = 'center';
+        headerContainer.style.marginBottom = '20px';
+
         // Create label showing chord numeral and name
         const label = document.createElement('div');
         label.className = 'chord-label';
         const chord = this.chords[index];
         label.textContent = `${chord.numeral || index + 1} - ${chord.root} ${this.getChordTypeName(chord.type)} (${this.getModeName(chord.mode)})`;
-        section.appendChild(label);
+        label.style.margin = '0';
+        headerContainer.appendChild(label);
+
+        // Create playback button with flyout - positioned in header
+        const playbackContainer = this.createPlaybackControls(index, 'prog');
+        headerContainer.appendChild(playbackContainer);
+
+        section.appendChild(headerContainer);
 
         // Create fretboard container
         const fretboardContainer = document.createElement('div');
         fretboardContainer.id = `prog-fretboard-${index}`;
         fretboardContainer.className = 'fretboard-container';
         section.appendChild(fretboardContainer);
-
-        // Create playback button with flyout - positioned absolutely
-        const playbackContainer = this.createPlaybackControls(index, 'prog');
-        playbackContainer.style.position = 'absolute';
-        playbackContainer.style.right = '20px';
-        playbackContainer.style.top = '50%';
-        playbackContainer.style.transform = 'translateY(-50%)';
-        playbackContainer.style.zIndex = '10';
-        section.appendChild(playbackContainer);
 
         return section;
     },
@@ -511,10 +470,6 @@ const App = {
         rootAccidentalGroup.classList.add('compact-group');
         controls.appendChild(rootAccidentalGroup);
 
-        // Create playback button with flyout
-        const playbackContainer = this.createPlaybackControls(index, 'fretboard');
-        controls.appendChild(playbackContainer);
-
         // Chord type selector
         const chordGroup = this.createSelect(
             `chord-type-${index}`,
@@ -552,6 +507,10 @@ const App = {
         modeGroup.appendChild(modeLabel);
         modeGroup.appendChild(modeSelect);
         controls.appendChild(modeGroup);
+
+        // Create playback button with flyout (after mode selector)
+        const playbackContainer = this.createPlaybackControls(index, 'fretboard');
+        controls.appendChild(playbackContainer);
 
         section.appendChild(controls);
 

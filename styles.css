@@ -8,20 +8,6 @@ body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: #140f0c;
     min-height: 100vh;
-    padding-top: 80px;
-}
-
-/* Mobile Scroll Behavior */
-.top-bar.mobile-static {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    will-change: transform;
-    z-index: 1000;
-}
-
-body:has(.top-bar.mobile-static) {
     padding-top: 0;
 }
 
@@ -363,7 +349,7 @@ body:has(#fretboard-page.active) .legend .leading-note-legend {
     display: none;
     max-width: 1400px;
     margin: 20px auto;
-    padding: 30px 20px 0 20px;
+    padding: 180px 20px 30px 20px;
 }
 
 .page-content.active {
@@ -961,12 +947,8 @@ body:has(#fretboard-page.active) .legend .leading-note-legend {
 
 /* Mobile Responsive */
 @media (max-width: 768px) {
-    body {
-        padding-top: 20px;
-    }
-
     .page-content {
-        padding: 0 20px;
+        padding: 200px 10px 30px 10px;
     }
 
     .top-bar-content {
