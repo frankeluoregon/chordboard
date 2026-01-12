@@ -68,10 +68,27 @@ body:has(.top-bar.mobile-static) {
 }
 
 
-#fretboard-page,
-#progression-page {
-    padding-top: 130px;
+
+/* Default fallback in case JS hasn't run yet */
+:root {
+  --topbar-offset: 140px; /* safe default; will be overwritten by JS */
 }
+
+/* Apply the offset to your page content wrappers */
+#fretboard-page,
+#progression-page,
+.page-content {
+  padding-top: var(--topbar-offset);
+  box-sizing: border-box;
+}
+
+/* Make sure nothing else zeroes it out */
+body:has(.top-bar.mobile-static) #fretboard-page,
+body:has(.top-bar.mobile-static) #progression-page,
+body:has(.top-bar.mobile-static) .page-content {
+  padding-top: var(--topbar-offset);
+}
+
 
 .mode-toggle {
     display: flex;
