@@ -5,6 +5,7 @@ const App = {
     currentInstrument: 'guitar',
     numChords: 4,
     chords: [],
+    pdfOrientation: 'landscape', // 'portrait' or 'landscape'
 
     // Progression mode settings
     progressionKey: 'C',
@@ -91,6 +92,11 @@ const App = {
             this.numChords = parseInt(e.target.value);
             this.initializeChords();
             this.renderFretboards();
+        });
+
+        // PDF orientation selector
+        document.getElementById('pdf-orientation').addEventListener('change', (e) => {
+            this.pdfOrientation = e.target.value;
         });
 
         // Chord select mode scale notes toggle
@@ -639,7 +645,8 @@ const App = {
      */
     async exportToPDF() {
         const { jsPDF } = window.jspdf;
-        const pdf = new jsPDF('p', 'mm', 'a4');
+        const orientation = this.pdfOrientation === 'landscape' ? 'l' : 'p';
+        const pdf = new jsPDF(orientation, 'mm', 'a4');
 
         if (this.chords.length === 0) {
             alert('No fretboards to export');
@@ -652,7 +659,7 @@ const App = {
         canvas.height = 450;  // Increased from 400 to give room for fret numbers
 
         let yPosition = 20;
-        const pageHeight = 297;
+        const pageHeight = this.pdfOrientation === 'landscape' ? 210 : 297;
         const sectionHeight = 70;
 
         for (let i = 0; i < this.chords.length; i++) {
