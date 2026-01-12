@@ -8,7 +8,16 @@ body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: #000000;
     min-height: 100vh;
-    padding-top: 140px;
+    padding-top: 80px;
+}
+
+/* Mobile Static Positioning */
+.top-bar.mobile-static {
+    position: static;
+}
+
+body:has(.top-bar.mobile-static) {
+    padding-top: 0;
 }
 
 /* Sticky Top Bar */
@@ -114,6 +123,20 @@ body {
     min-width: 80px;
 }
 
+#chord-select-scale-toggle label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+}
+
+#chord-select-scale-toggle input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: #007030;
+}
+
 .export-btn {
     padding: 6px 16px;
     background: #007030;
@@ -138,25 +161,25 @@ body {
 
 /* Legend */
 .legend {
-    position: fixed;
-    top: 90px;
-    left: 50%;
-    transform: translateX(-50%);
     display: flex;
-    gap: 20px;
-    padding: 10px 20px;
-    background: #1a1a1a;
-    border-radius: 8px;
-    border: 1px solid #333;
-    z-index: 999;
+    gap: 15px;
+    padding: 0;
+    background: transparent;
+    border: none;
 }
 
 .legend-item {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     color: #ffffff;
-    font-size: 0.85em;
+    font-size: 0.8em;
+    white-space: nowrap;
+}
+
+/* Hide leading note legend item in Chord Select mode */
+body:has(#fretboard-page.active) .legend .leading-note-legend {
+    display: none;
 }
 
 .legend-marker {
@@ -174,6 +197,7 @@ body {
 .legend-marker.chord-tone {
     background: #FEE11A;
     color: #007030;
+    border: 2px solid #007030;
     border-radius: 3px; /* Square */
 }
 
@@ -186,7 +210,7 @@ body {
 .legend-marker.leading-note {
     background: #7FA925;
     color: #000000;
-    border: 2px solid #6A8E1F;
+    border: none;
     border-radius: 0;
     clip-path: polygon(20% 0%, 20% 100%, 100% 50%); /* Triangle */
     width: 24px;
@@ -318,11 +342,26 @@ body {
     transform: scale(1.1);
 }
 
+.fret-marker sub {
+    font-size: 0.6em;
+    font-weight: normal;
+    vertical-align: sub;
+    line-height: 0;
+}
+
+.fret-marker sup {
+    font-size: 0.75em;
+    font-weight: normal;
+    vertical-align: super;
+    line-height: 0;
+}
+
 .fret-marker.chord-tone {
     background: #FEE11A;
     color: #007030;
-    border-color: #FEE11A;
+    border: 3px solid #007030;
     border-radius: 4px; /* Square for chord tones */
+    font-size: 0.75em;
 }
 
 .fret-marker.scale-note {
@@ -330,12 +369,13 @@ body {
     color: #333;
     border-color: #999999;
     border-radius: 50%; /* Circle for scale notes */
+    font-size: 0.7em;
 }
 
 .fret-marker.leading-note {
     background: #7FA925;
     color: #000000;
-    border: 2px solid #6A8E1F;
+    border: none;
     border-radius: 0;
     clip-path: polygon(20% 0%, 20% 100%, 100% 50%); /* Triangle shifted right */
     width: 36px;
@@ -423,6 +463,30 @@ body {
     border-color: #007030;
 }
 
+.progression-toggles {
+    display: flex;
+    gap: 30px;
+    justify-content: center;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+}
+
+.progression-toggles label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #ffffff;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.progression-toggles input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #007030;
+}
+
 .progression-list {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -456,7 +520,7 @@ body {
 /* Mobile Responsive */
 @media (max-width: 768px) {
     body {
-        padding-top: 180px;
+        padding-top: 20px;
     }
 
     .top-bar-content {
@@ -474,6 +538,16 @@ body {
         justify-content: center;
     }
 
+    .legend {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .legend-item {
+        font-size: 0.75em;
+    }
+
     .top-controls {
         flex-direction: column;
         gap: 10px;
@@ -481,13 +555,6 @@ body {
 
     .input-group {
         justify-content: space-between;
-    }
-
-    .legend {
-        top: 160px;
-        flex-direction: column;
-        gap: 8px;
-        padding: 8px 15px;
     }
 
     .fretboard-container {

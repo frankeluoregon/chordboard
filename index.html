@@ -17,6 +17,25 @@
                 <button id="progression-mode-btn" class="mode-btn">Progression</button>
             </div>
 
+            <div class="legend">
+                <div class="legend-item">
+                    <span class="legend-marker root-note">R</span>
+                    <span>Root</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-marker chord-tone">3</span>
+                    <span>Chord Tone</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-marker scale-note">2</span>
+                    <span>Scale Note</span>
+                </div>
+                <div class="legend-item leading-note-legend">
+                    <span class="legend-marker leading-note">L</span>
+                    <span>Leading Note</span>
+                </div>
+            </div>
+
             <div class="top-controls">
                 <div class="input-group">
                     <label for="instrument">Instrument:</label>
@@ -41,27 +60,15 @@
                     </select>
                 </div>
 
+                <div class="input-group" id="chord-select-scale-toggle">
+                    <label>
+                        <input type="checkbox" id="chord-select-show-scale" checked>
+                        Scale Notes
+                    </label>
+                </div>
+
                 <button id="export-pdf-btn" class="export-btn">Export to PDF</button>
             </div>
-        </div>
-    </div>
-
-    <div class="legend">
-        <div class="legend-item">
-            <span class="legend-marker root-note">R</span>
-            <span>Root</span>
-        </div>
-        <div class="legend-item">
-            <span class="legend-marker chord-tone">3</span>
-            <span>Chord Tone</span>
-        </div>
-        <div class="legend-item">
-            <span class="legend-marker scale-note">2</span>
-            <span>Scale Note</span>
-        </div>
-        <div class="legend-item">
-            <span class="legend-marker leading-note">L</span>
-            <span>Leading Note</span>
         </div>
     </div>
 
@@ -79,16 +86,16 @@
                 <label for="progression-key">Key:</label>
                 <select id="progression-key">
                     <option value="C">C</option>
-                    <option value="C#">C#</option>
+                    <option value="C#">C# / Db</option>
                     <option value="D">D</option>
-                    <option value="D#">D#</option>
+                    <option value="D#">D# / Eb</option>
                     <option value="E">E</option>
                     <option value="F">F</option>
-                    <option value="F#">F#</option>
+                    <option value="F#">F# / Gb</option>
                     <option value="G">G</option>
-                    <option value="G#">G#</option>
+                    <option value="G#">G# / Ab</option>
                     <option value="A">A</option>
-                    <option value="A#">A#</option>
+                    <option value="A#">A# / Bb</option>
                     <option value="B">B</option>
                 </select>
 
@@ -99,11 +106,22 @@
                 </select>
             </div>
 
+            <div class="progression-toggles">
+                <label>
+                    <input type="checkbox" id="show-leading-notes" checked>
+                    Show Leading Notes
+                </label>
+                <label>
+                    <input type="checkbox" id="show-scale-notes" checked>
+                    Show Scale Notes
+                </label>
+            </div>
+
             <div class="progression-list">
                 <button class="progression-btn" data-progression="I-IV-V" data-quality="major">I - IV - V (Classic Rock)</button>
                 <button class="progression-btn" data-progression="I-V-vi-IV" data-quality="major">I - V - vi - IV (Pop)</button>
-                <button class="progression-btn" data-progression="ii-V-I" data-quality="major">ii - V - I (Jazz)</button>
-                <button class="progression-btn" data-progression="I-vi-ii-V" data-quality="major">I - vi - ii - V (50s)</button>
+                <button class="progression-btn" data-progression="ii-V-I" data-quality="major" data-use7ths="true">ii - V - I (Jazz)</button>
+                <button class="progression-btn" data-progression="I-vi-ii-V" data-quality="major" data-use7ths="true">I - vi - ii - V (50s)</button>
                 <button class="progression-btn" data-progression="i-VI-III-VII" data-quality="minor">i - VI - III - VII (Minor Pop)</button>
                 <button class="progression-btn" data-progression="i-iv-v" data-quality="minor">i - iv - v (Minor Blues)</button>
                 <button class="progression-btn" data-progression="I-iii-IV-V" data-quality="major">I - iii - IV - V (Doo-Wop)</button>

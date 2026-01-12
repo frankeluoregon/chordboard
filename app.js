@@ -9,11 +9,18 @@ const App = {
     // Progression mode settings
     progressionKey: 'C',
     progressionQuality: 'major',
+    showLeadingNotes: true,
+    showScaleNotes: true,
 
     /**
      * Initialize the application
      */
     init() {
+        // Detect mobile and adjust toolbar positioning
+        if (this.isMobile()) {
+            document.querySelector('.top-bar').classList.add('mobile-static');
+        }
+
         // Initialize chord progression with defaults
         this.initializeChords();
 
@@ -22,6 +29,14 @@ const App = {
 
         // Render the initial mode
         this.renderFretboards();
+    },
+
+    /**
+     * Detect if device is mobile
+     */
+    isMobile() {
+        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+            || window.innerWidth <= 768;
     },
 
     /**
@@ -78,6 +93,14 @@ const App = {
             this.renderFretboards();
         });
 
+        // Chord select mode scale notes toggle
+        document.getElementById('chord-select-show-scale').addEventListener('change', (e) => {
+            this.showScaleNotes = e.target.checked;
+            if (this.currentMode === 'fretboard') {
+                this.renderFretboards();
+            }
+        });
+
         // Progression mode controls
         document.getElementById('progression-key').addEventListener('change', (e) => {
             this.progressionKey = e.target.value;
@@ -87,11 +110,27 @@ const App = {
             this.progressionQuality = e.target.value;
         });
 
+        // Progression toggles
+        document.getElementById('show-leading-notes').addEventListener('change', (e) => {
+            this.showLeadingNotes = e.target.checked;
+            if (this.currentMode === 'progression') {
+                this.renderProgressionDisplay();
+            }
+        });
+
+        document.getElementById('show-scale-notes').addEventListener('change', (e) => {
+            this.showScaleNotes = e.target.checked;
+            if (this.currentMode === 'progression') {
+                this.renderProgressionDisplay();
+            }
+        });
+
         // Progression buttons
         document.querySelectorAll('.progression-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const progression = e.target.dataset.progression;
                 const quality = e.target.dataset.quality;
+                const use7ths = e.target.dataset.use7ths === 'true';
 
                 // Update the quality selector to match the progression
                 if (quality) {
@@ -99,7 +138,7 @@ const App = {
                     this.progressionQuality = quality;
                 }
 
-                this.loadProgression(progression);
+                this.loadProgression(progression, use7ths);
             });
         });
 
@@ -130,8 +169,8 @@ const App = {
     /**
      * Load a progression
      */
-    loadProgression(progressionString) {
-        const chords = Progressions.parseProgression(progressionString, this.progressionKey, this.progressionQuality);
+    loadProgression(progressionString, use7ths = false) {
+        const chords = Progressions.parseProgression(progressionString, this.progressionKey, this.progressionQuality, use7ths);
         this.chords = chords;
         this.numChords = chords.length;
         this.renderProgressionDisplay();
@@ -159,7 +198,9 @@ const App = {
                     chord.root,
                     chord.type,
                     chord.mode,
-                    nextChordRoot
+                    nextChordRoot,
+                    this.showLeadingNotes,  // Use toggle value
+                    this.showScaleNotes     // Use toggle value
                 );
             }
         }, 10);
@@ -219,25 +260,50 @@ const App = {
         label.textContent = `Chord ${index + 1}`;
         controls.appendChild(label);
 
-        // Root note selector
-        const rootGroup = this.createSelect(
-            `root-note-${index}`,
+        // Root note letter selector
+        const currentRoot = this.chords[index].root;
+        const rootLetter = currentRoot.replace('#', '');
+        const rootAccidental = currentRoot.includes('#') ? '#' : '';
+
+        const rootLetterGroup = this.createSelect(
+            `root-letter-${index}`,
             'Root:',
             [
-                { value: 'C', label: 'C' }, { value: 'C#', label: 'C#' },
-                { value: 'D', label: 'D' }, { value: 'D#', label: 'D#' },
-                { value: 'E', label: 'E' }, { value: 'F', label: 'F' },
-                { value: 'F#', label: 'F#' }, { value: 'G', label: 'G' },
-                { value: 'G#', label: 'G#' }, { value: 'A', label: 'A' },
-                { value: 'A#', label: 'A#' }, { value: 'B', label: 'B' }
+                { value: 'C', label: 'C' },
+                { value: 'D', label: 'D' },
+                { value: 'E', label: 'E' },
+                { value: 'F', label: 'F' },
+                { value: 'G', label: 'G' },
+                { value: 'A', label: 'A' },
+                { value: 'B', label: 'B' }
             ],
-            this.chords[index].root,
+            rootLetter,
             (e) => {
-                this.chords[index].root = e.target.value;
+                const accidental = document.getElementById(`root-accidental-${index}`).value;
+                this.chords[index].root = e.target.value + accidental;
                 this.updateFretboard(index);
             }
         );
-        controls.appendChild(rootGroup);
+        controls.appendChild(rootLetterGroup);
+
+        // Root accidental selector
+        const rootAccidentalGroup = this.createSelect(
+            `root-accidental-${index}`,
+            '',
+            [
+                { value: '', label: '♮' },
+                { value: '#', label: '♯' },
+                { value: 'b', label: '♭' }
+            ],
+            rootAccidental,
+            (e) => {
+                const letter = document.getElementById(`root-letter-${index}`).value;
+                this.chords[index].root = letter + e.target.value;
+                this.updateFretboard(index);
+            }
+        );
+        rootAccidentalGroup.classList.add('compact-group');
+        controls.appendChild(rootAccidentalGroup);
 
         // Chord type selector
         const chordGroup = this.createSelect(
@@ -366,7 +432,10 @@ const App = {
             containerId,
             chord.root,
             chord.type,
-            chord.mode
+            chord.mode,
+            null,  // nextChordRoot (not used in chord select)
+            false, // showLeadingNotes (not used in chord select)
+            this.showScaleNotes  // Use toggle value
         );
     },
 
@@ -419,13 +488,15 @@ const App = {
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, width, height);
 
-        // Draw label
+        // Draw label (indented)
         ctx.fillStyle = '#000000';
         ctx.font = 'bold 24px Arial';
-        ctx.fillText(chordLabel, 20, 40);
+        ctx.textAlign = 'left';  // Reset text alignment to left
+        ctx.textBaseline = 'top';  // Reset baseline
+        ctx.fillText(chordLabel, 50, 30);  // Moved up 10px (from 40 to 30)
 
-        const fretboardTop = 60;
-        const fretboardHeight = height - 100;
+        const fretboardTop = 80;  // Spacing maintained for breathing room
+        const fretboardHeight = height - 160;  // Leave more room for fret numbers (60px instead of 40px)
         const fretboardWidth = width - 100;
         const numStrings = Fretboard.tuning.length;
         const numFrets = 12;
@@ -487,33 +558,28 @@ const App = {
                     let fillColor, strokeColor, lineWidth, shape, textColor;
 
                     if (isRoot) {
-                        fillColor = '#007030';
-                        strokeColor = '#FEE11A';
-                        textColor = '#FEE11A';
+                        fillColor = '#000000';  // Black for root
+                        strokeColor = '#FFFFFF';  // White outline
+                        textColor = '#FFFFFF';  // White text
                         lineWidth = 3;
                         shape = 'square';
-                    } else if (isLeadingNote && isChordTone) {
-                        fillColor = '#FEE11A';
-                        strokeColor = '#007030';
-                        textColor = '#007030';
-                        lineWidth = 2;
-                        shape = 'pentagon';
-                    } else if (isLeadingNote && !isChordTone) {
-                        fillColor = '#7FA925';
-                        strokeColor = '#6A8E1F';
-                        textColor = '#000000';
-                        lineWidth = 2;
+                    } else if (isLeadingNote) {
+                        // All leading notes use triangle
+                        fillColor = '#999999';  // Medium gray
+                        strokeColor = '#999999';
+                        textColor = '#000000';  // Black text
+                        lineWidth = 0;
                         shape = 'triangle';
                     } else if (isChordTone) {
-                        fillColor = '#FEE11A';
-                        strokeColor = '#FEE11A';
-                        textColor = '#007030';
+                        fillColor = '#CCCCCC';  // Light gray for chord tones
+                        strokeColor = '#CCCCCC';
+                        textColor = '#000000';  // Black text
                         lineWidth = 2;
                         shape = 'square';
                     } else {
-                        fillColor = '#FFFFFF';
-                        strokeColor = '#000000';
-                        textColor = '#000000';
+                        fillColor = '#FFFFFF';  // White for scale notes
+                        strokeColor = '#000000';  // Black outline
+                        textColor = '#000000';  // Black text
                         lineWidth = 2;
                         shape = 'circle';
                     }
@@ -532,20 +598,6 @@ const App = {
                         ctx.lineTo(x - size + shift, y + size);
                         ctx.lineTo(x + size * 1.2, y);
                         ctx.closePath();
-                    } else if (shape === 'pentagon') {
-                        // Right-pointing house shape (square with triangular point)
-                        const w = size * 1.2;
-                        const h = size * 1.4;
-                        // Left side rectangle
-                        ctx.moveTo(x - w, y - h * 0.4);
-                        ctx.lineTo(x - w, y + h * 0.4);
-                        ctx.lineTo(x + w * 0.2, y + h * 0.4);
-                        // Triangle point
-                        ctx.lineTo(x + w * 0.2, y + h * 0.7);
-                        ctx.lineTo(x + w, y);
-                        ctx.lineTo(x + w * 0.2, y - h * 0.7);
-                        ctx.lineTo(x + w * 0.2, y - h * 0.4);
-                        ctx.closePath();
                     }
 
                     ctx.fillStyle = fillColor;
@@ -563,9 +615,7 @@ const App = {
                     let label;
                     if (isRoot) {
                         label = 'R';
-                    } else if (isLeadingNote && isChordTone) {
-                        label = MusicTheory.getChordIntervalLabel(chord.root, note, chord.type);
-                    } else if (isLeadingNote && !isChordTone) {
+                    } else if (isLeadingNote) {
                         label = 'L';
                     } else if (isChordTone) {
                         label = MusicTheory.getChordIntervalLabel(chord.root, note, chord.type);
@@ -593,7 +643,7 @@ const App = {
         // Create a hidden canvas
         const canvas = document.createElement('canvas');
         canvas.width = 1200;
-        canvas.height = 400;
+        canvas.height = 450;  // Increased from 400 to give room for fret numbers
 
         let yPosition = 20;
         const pageHeight = 297;
@@ -601,37 +651,70 @@ const App = {
 
         for (let i = 0; i < this.chords.length; i++) {
             const chord = this.chords[i];
-            const nextChordRoot = i < this.chords.length - 1 ? this.chords[i + 1].root : null;
+            // Only pass nextChordRoot in progression mode (to show leading notes)
+            const nextChordRoot = this.currentMode === 'progression' && i < this.chords.length - 1
+                ? this.chords[i + 1].root
+                : null;
 
             // Create chord label
             const chordLabel = this.currentMode === 'progression' && chord.numeral
                 ? `${chord.numeral} - ${chord.root} ${this.getChordTypeName(chord.type)} (${this.getModeName(chord.mode)})`
                 : `Chord ${i + 1} - ${chord.root} ${this.getChordTypeName(chord.type)} (${this.getModeName(chord.mode)})`;
 
-            // Draw fretboard on canvas
-            this.drawFretboardOnCanvas(canvas, chord, chordLabel, nextChordRoot);
+            // Calculate image dimensions
+            const imgWidth = 170;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-            // Check if we need a new page
-            if (i > 0 && yPosition + sectionHeight > pageHeight - 20) {
+            // Check if we need a new page BEFORE drawing
+            if (i > 0 && yPosition + imgHeight > pageHeight - 20) {
                 pdf.addPage();
                 yPosition = 20;
             }
 
+            // Draw fretboard on canvas
+            this.drawFretboardOnCanvas(canvas, chord, chordLabel, nextChordRoot);
+
             // Add canvas to PDF
             const imgData = canvas.toDataURL('image/png');
-            const imgWidth = 170;
-            const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
             pdf.addImage(imgData, 'PNG', 20, yPosition, imgWidth, imgHeight);
             yPosition += imgHeight + 10;
         }
 
         // Generate filename
-        const filename = this.currentMode === 'fretboard'
-            ? 'chordboard-fretboards.pdf'
-            : 'chordboard-progression.pdf';
+        let filename;
+        if (this.currentMode === 'fretboard') {
+            // Chord Select mode: use chord abbreviations (e.g., "C-Am-F-G.pdf")
+            const chordAbbrs = this.chords.map(chord => {
+                const root = chord.root.replace('#', 's'); // Replace # with s for filenames
+                const type = this.getChordTypeAbbr(chord.type);
+                return root + type;
+            });
+            filename = chordAbbrs.join('-') + '.pdf';
+        } else {
+            // Progression mode: use key and progression pattern (e.g., "C-major-I-V-vi-IV.pdf")
+            const key = this.progressionKey.replace('#', 's');
+            const quality = this.progressionQuality;
+            const numerals = this.chords.map(c => c.numeral).join('-');
+            filename = `${key}-${quality}-${numerals}.pdf`;
+        }
 
         pdf.save(filename);
+    },
+
+    /**
+     * Get chord type abbreviation for filename
+     */
+    getChordTypeAbbr(type) {
+        const abbrs = {
+            major: '',
+            minor: 'm',
+            dominant7: '7',
+            major7: 'maj7',
+            minor7: 'm7',
+            diminished: 'dim',
+            augmented: 'aug'
+        };
+        return abbrs[type] || '';
     }
 };
 

@@ -67,10 +67,25 @@ const MusicTheory = {
     },
 
     /**
+     * Convert flat notation to sharp notation
+     */
+    normalizeNote(note) {
+        const flatToSharp = {
+            'Db': 'C#',
+            'Eb': 'D#',
+            'Gb': 'F#',
+            'Ab': 'G#',
+            'Bb': 'A#'
+        };
+        return flatToSharp[note] || note;
+    },
+
+    /**
      * Get the index of a note in the chromatic scale
      */
     getNoteIndex(note) {
-        return this.notes.indexOf(note);
+        const normalized = this.normalizeNote(note);
+        return this.notes.indexOf(normalized);
     },
 
     /**

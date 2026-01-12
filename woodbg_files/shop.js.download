@@ -1,0 +1,2015 @@
+/**********************************************
+ * shop.js
+ * Onlinineshop Javascript Tools
+ * KAPS GmbH
+ * Emersacker
+ **********************************************/
+
+var http = new XMLHttpRequest();
+var http2 = new XMLHttpRequest();
+var pageStack = new Array();
+var pageClass = new Array();
+var allow_submit = true;
+var modalStack = new Array();
+var counter = 0;
+
+window.addEventListener("popstate", (event) => {
+	restoreContainer();
+});
+
+function unblock_submit()	{
+	allow_submit = true;
+}
+
+function restoreModal()	{
+	var modalbox = document.getElementById('modalbox');
+	var modal = modalStack.pop();
+	modalbox.outerHTML = modal.outerHTML;
+	closeModalBox();
+}
+
+function setUsermode(modus)	{
+	var jetzt = new Date();
+	var gueltig = new Date(jetzt.getTime() + 756864000000);
+	document.cookie = "usermode="+ modus +"; expires=" + gueltig.toGMTString() + ";path=/shop/";
+}
+
+function setFilterMode(modus)	{
+	var jetzt = new Date();
+	var gueltig = new Date(jetzt.getTime() + 756864000000);
+	document.cookie = "filtermode="+ modus +"; expires=" + gueltig.toGMTString() + ";path=/shop/";
+}
+
+function setTrennschnittMode(modus)	{
+	var jetzt = new Date();
+	var gueltig = new Date(jetzt.getTime() + 756864000000);
+	document.cookie = "trennschnittmode="+ modus +"; expires=" + gueltig.toGMTString() + ";path=/shop/";
+}
+
+function httpRequest(parameter, response)	{
+	var pl = new Array();
+	var i;
+
+	for ( i in parameter) {
+		if(i !== 'indexOf')	{
+			parameter[i][1] = encodeURIComponent(parameter[i][1]);
+			pl[i] = parameter[i].join('=');
+		}
+	}
+	params = pl.join('&');
+	http.open('POST', '/shop/ajax', true);
+
+	if(response === 0)	{
+		http.onreadystatechange = handleResponse_artikel;
+	} else {
+		http.onreadystatechange = handleResponse_container;
+		history.pushState(null, "Detailansicht", "");
+	}
+    http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    http.send(params);
+	navLayer(true);
+}
+
+function handleResponse_artikel() {
+    if(http.readyState === 4){
+        var antwort = http.responseText;
+        var content = document.getElementById('search_result');
+        var filter = document.getElementById('filter');
+        antwort = antwort.split('|||');
+		console.log(antwort[1]);
+		var objekt;
+		var cookies = document.cookie.split(';');
+		var max = cookies.length;
+		var n = 0;
+		var kv;
+		var check = true;
+
+		while (n < max)	{
+			kv = cookies[n].trim();
+			cw = kv.split('=');
+			if(cw[0] === 'filtermode')	{
+				if(cw[1] === 'multi')	{
+					check = false;
+				} else {
+					check = true;
+				}
+				n = max;
+			}
+			n++;
+		}
+
+
+    	content.outerHTML = antwort[0];
+
+        if(antwort[1])	 {
+			if(antwort[1].substr(0, 4) === '<div')	{
+				filter.outerHTML = antwort[1];
+				initFilterToggle();
+			}
+			else if(antwort[1] === 'reset')	{
+				var mlist = document.getElementById('filter').getElementsByTagName('input');
+				var bildlist = document.getElementById('filter').getElementsByClassName('filter__color-item');
+
+				for(objekt in mlist)	{
+					mlist[objekt].disabled = false;
+					mlist[objekt].checked = false;
+				}
+				for(objekt in bildlist)	{
+					if(bildlist[objekt].firstElementChild)	{
+						bildlist[objekt].firstElementChild.className = 'filter__color-check'	;
+					}
+				}
+			}
+			else {
+				var jsonObj = JSON.parse(antwort[1]);
+				var mlist = document.getElementById('filter').getElementsByTagName('input');
+				var bildlist = document.getElementById('filter').getElementsByClassName('filter__color-item');
+				var className;
+				var nameId;
+
+				// Alle Checkboxen deaktivieren
+				for(objekt in mlist)	{
+					if(mlist[objekt].name) {
+						nameId = mlist[objekt].name.substr(0, 14);
+					} else {
+						nameId = 'undefined name';
+					}
+
+					if(nameId !== 'filter__length')	{
+						if(jsonObj.merkmale[mlist[objekt].id] === 1 )	{
+							mlist[objekt].disabled = false;
+						} else {
+							mlist[objekt].disabled = check;
+						}
+					}
+				}
+
+				// Alle Bildboxen deaktivieren
+				for(objekt in bildlist)	{
+					if(bildlist[objekt].firstElementChild)	{
+						className = bildlist[objekt].firstElementChild.className;
+						if(className !== 'filter__color-item is-checked')	{
+							if(check)	{
+								if(jsonObj.merkmale[bildlist[objekt].id] === 1 )	{
+									bildlist[objekt].firstElementChild.className = 'filter__color-check'	;
+								} else {
+									bildlist[objekt].firstElementChild.className = 'filter__color-check is-grayed'	;
+								}
+							}
+						}
+					}
+				}
+			}
+        }
+		navLayer(false);
+    }
+}
+
+function handleResponse_container() {
+    if(http.readyState === 4){
+    	var container = document.getElementById('container');
+
+		if(container === null)	{
+			container = document.createElement('div');
+			container.id = 'container';
+			document.body.appendChild(container);
+		}
+        var antwort = http.responseText;
+		var clon = container.cloneNode(true);
+
+		pageStack.push(clon);
+		pageClass.push(container.parentNode.parentNode.className);
+		container.innerHTML = antwort;
+		container.parentNode.parentNode.className = 'content page__content';
+		navLayer(false);
+		initTabsNav();
+		initToggleCustomerReview();
+		initAccordion();
+    }
+}
+
+function reloadContainer()	{
+    if(http.readyState === 4){
+    	var container = document.getElementById('container');
+        var antwort = http.responseText;
+
+		container.innerHTML = antwort;
+		navLayer(false);
+		initTabsNav();
+		initToggleCustomerReview();
+		initAccordion();
+    }
+}
+
+function set_page(page)	{
+	var parameter = new Array();
+	parameter[0] = ['modus', 'set_page'];
+	parameter[1] = ['page', page];
+	httpRequest(parameter, 0);
+}
+
+function next_page()	{
+	var parameter = new Array();
+	document.getElementById('top').scrollIntoView();
+	parameter[0] = ['modus', 'page_up'];
+	httpRequest(parameter, 0);
+}
+
+function prev_page()	{
+	var parameter = new Array();
+	document.getElementById('top').scrollIntoView();
+	parameter[0] = ['modus', 'page_down'];
+	httpRequest(parameter, 0);
+}
+
+
+function EnterPosMenge(FeldID, Nachkomma, modus, event)	{
+	allow_submit = false;
+	event.preventDefault();
+	event.keyCode = 0;
+
+	PosMenge(FeldID, Nachkomma);
+	if(modus === 'add')	{
+		addItem(FeldID);
+	}
+	else if(modus === 'modify')	{
+		modifyItem(FeldID);
+		return false;
+	}
+	window.setTimeout('unblock_submit()', 500);
+}
+
+function EnterVKMenge(FeldID, Nachkomma, modus, event)	{
+	allow_submit = false;
+	event.preventDefault();
+	event.keyCode = 0;
+
+	if(modus == 'add')	{
+		addItem(FeldID);
+	}
+	else if(modus == 'modify')	{
+		modifyItem(FeldID);
+		return false;
+	}
+	window.setTimeout('unblock_submit()', 500);
+}
+
+
+function EnterStueckzahl(FeldID, Nachkomma, modus, event)	{
+	allow_submit = false;
+	event.preventDefault();
+	event.keyCode = 0;
+
+	Stueckzahl(FeldID, Nachkomma);
+	if(modus == 'add')	{
+		addItem(FeldID);
+	}
+	else if(modus == 'modify')	{
+		modifyItem(FeldID);
+		return false;
+	}
+	window.setTimeout('unblock_submit()', 500);
+}
+
+function Stueckzahl(FeldID, Nachkomma) {
+	var xname = 'xmenge' + FeldID;
+	var feld = document.getElementById(xname);
+	if(feld.defaultValue > 0)	{
+		if(feld.value == '')	{
+			feld.value = feld.defaultValue;
+		}
+		else if(feld.value == 0)	{
+			feld.value = feld.defaultValue;
+		}
+	}
+
+	//Rechnet aus der Menge die Stückzahl zurück
+	var NeueStueckzahl;
+	var toleranz = 1 - 1 / Math.pow(10, Nachkomma);
+	var Oname = 'xmenge' + FeldID;
+	var OSName = 'menge' + FeldID;
+	var testMenge;
+	var Mufa = 'mufa' + FeldID;
+	var Faktor = document.getElementById(Mufa).value;
+	var Xmenge = document.getElementById(Oname);
+	var Menge = Xmenge.value;
+
+	var StueckFeld = document.getElementById(OSName);
+	var Stueck;
+
+	if(StueckFeld)	{
+		Stueck = StueckFeld.value;
+	} else {
+		Stueck = 0;
+	}
+
+	Menge = Komma_Tausch(Menge);
+	if (toleranz < 0.99)	{
+		toleranz = 0.99;
+	}
+
+
+	// Prüfen, ob Stück * Umrechnung die Menge ergibt
+	// Falls ja, nichts unternehmen
+	testMenge = Stueck * Faktor;
+	testMenge = Runden(testMenge, Nachkomma);
+
+	if(testMenge !== Menge)	{
+
+		// Division durch Null unterbinden
+		if (Faktor === 0)	{
+			NeueStueckzahl = 0;
+		} else {
+			NeueStueckzahl = Math.floor(Menge / Faktor + toleranz);
+		}
+
+		if(StueckFeld)	{
+				StueckFeld.value = NeueStueckzahl;
+		}
+
+		if(NeueStueckzahl > 0) {
+			PosMenge(FeldID, Nachkomma);
+		} else {
+			Xmenge.value = '';
+			if(StueckFeld)	{
+				StueckFeld.value = '';
+			}
+		}
+	}
+}
+
+
+function PosMenge(FeldID, Nachkomma) {
+	var xname = 'menge' + FeldID;
+	var feld = document.getElementById(xname);
+
+	if(feld)	{
+		if(feld.defaultValue > 0)	{
+			if(feld.value == '')	{
+				feld.value = feld.defaultValue;
+			}
+			else if(feld.value == 0)	{
+				feld.value = feld.defaultValue;
+			}
+		}
+	}
+
+	// Berechnet die Verkaufsmenge ausgehend von der Stückzahl
+	// und dem MUFA bzw. Lünge und Breite
+	var Ergebnis;
+	var Oname = 'xmenge' + FeldID;
+	var Mufa = 'mufa' + FeldID;
+	var Faktor = document.getElementById(Mufa).value;
+	var Stueckfeld = document.getElementById('menge' + FeldID);
+	var Stueck = '';
+	var Xmenge = document.getElementById(Oname);
+
+	if(Stueckfeld)	{
+		 Stueck = document.getElementById('menge' + FeldID).value;
+
+
+		if(Stueck === '')	{
+			Stueck = 0;
+		}
+
+		Stueck = Komma_Tausch(Stueck);
+		Stueck = parseInt(Stueck);
+		if(Stueck === 0)	{
+			Stueck = '';
+		}
+
+		//Wenn Faktor 0 ist, nachsehen, ob mit Lünge und Breite multipliziert werden kann
+		if(Faktor === 0)	{
+			Faktor = calc_Faktor(FeldID);
+		}
+
+		Xmenge.value = Stueck;
+		Ergebnis = Stueck * Faktor;
+
+		if(Ergebnis === 0) {
+			Ergebnis = '';
+		} else {
+				Ergebnis = Runden(Ergebnis, Nachkomma);
+		}
+
+		if(Ergebnis === 'NaN')	{
+			Ergebnis = '';
+		}
+
+		Xmenge.value = Ergebnis;
+	}
+}
+
+function Komma_Tausch(wert)
+{
+	i=wert.length -1;
+	for( n=0; n<=i; n++)	{
+		if(wert.substr(n,1) === ',')	{
+			wert = wert.substr(0,n) + '.' + wert.substr(n+1,i+1);
+		}
+	}
+	return wert;
+}
+
+function Runden(wert, Nachkomma)
+{
+
+	var genau = Math.pow(10, Nachkomma);
+	var wert = Math.round(wert * genau) / genau;
+
+	if(wert === "NaN")	{ wert = ''; }
+	return wert;
+}
+
+function artikel_je_seite(anzahl)	{
+	var aktuell = new Date();
+	var gueltig = 1000*60*60*24*365;
+	var ende = new Date(aktuell.getTime() + gueltig);
+	document.cookie = 'items_per_page=' + anzahl + "; expires=" + ende.toGMTString() + '; path=/shop/';
+
+	set_page(1);
+}
+
+function set_page(page)	{
+	var parameter = new Array();
+	document.getElementById('top').scrollIntoView();
+	parameter[0] = ['modus', 'set_page'];
+	parameter[1] = ['page', page];
+	httpRequest(parameter, 0);
+}
+
+
+function sort_by(order){
+	var parameter = new Array();
+	parameter[0] = ['modus', 'sort_by'];
+	parameter[1] = ['order', order];
+
+	httpRequest(parameter, 0);
+}
+
+function filter_kategorie(hg, ug, kat)	{
+	var parameter = new Array();
+	parameter[0] = ['modus', 'filter_kategorie'];
+	parameter[1] = ['hg', hg];
+	parameter[2] = ['ug', ug];
+	parameter[3] = ['kat',kat];
+
+	httpRequest(parameter, 0);
+}
+
+function filter_reset()	{
+	var parameter = new Array();
+	parameter[0] = ['modus', 'filter_reset'];
+
+	httpRequest(parameter, 0);
+}
+
+
+function filter_lager(lagerartikel, id)	{
+	var parameter = new Array();
+
+	if(id)	{
+		checkCheckbox(id);
+	}
+	parameter[0] = ['modus', 'filter_global'];
+	parameter[1] = ['lagerartikel', lagerartikel];
+
+	httpRequest(parameter, 0);
+}
+
+function filter_set_lagerartikel(lagerartikel)	{
+	var parameter = new Array();
+	parameter[0] = ['modus', 'filter_global'];
+	parameter[1] = ['lagerartikel', lagerartikel];
+
+	httpRequest(parameter, 0);
+}
+
+function filter_set_oekoartikel(oekoartikel)	{
+	var parameter = new Array();
+	parameter[0] = ['modus', 'filter_global'];
+	parameter[1] = ['oekoartikel', oekoartikel];
+
+	httpRequest(parameter, 0);
+}
+
+function filter_price()	{
+	var parameter = new Array();
+	var min = document.getElementById('amount-min');
+	var max = document.getElementById('amount-max');
+
+	parameter[0] = ['modus', 'filter_price'];
+	parameter[1] = ['min', min.value];
+	parameter[2] = ['max', max.value];
+
+	httpRequest(parameter, 0);
+}
+
+
+function filter_merkmal(eg, mm, checked){
+
+	var parameter = new Array();
+	 parameter[0] = ['modus', 'filter_merkmal'];
+	 parameter[1] = ['eg', eg];
+	 parameter[2] = ['mm', mm];
+	 parameter[3] = ['checked', checked];
+
+	 httpRequest(parameter, 0);
+
+}
+
+function filter_lang(eg, mm, checked){
+	var parameter = new Array();
+	 parameter[0] = ['modus', 'filter_lang'];
+	 parameter[1] = ['eg', eg];
+	 parameter[2] = ['mm', mm];
+	 parameter[3] = ['checked', checked];
+
+	 httpRequest(parameter, 0);
+
+}
+
+function filter_breit(eg, mm, checked){
+	var parameter = new Array();
+	 parameter[0] = ['modus', 'filter_breit'];
+	 parameter[1] = ['eg', eg];
+	 parameter[2] = ['mm', mm];
+	 parameter[3] = ['checked', checked];
+
+	 httpRequest(parameter, 0);
+}
+
+function filter_stark(eg, mm, checked, id){
+
+	if(id)	{
+		checkCheckbox(id);
+	}
+
+	var parameter = new Array();
+	 parameter[0] = ['modus', 'filter_stark'];
+	 parameter[1] = ['eg', eg];
+	 parameter[2] = ['mm', mm];
+	 parameter[3] = ['checked', checked];
+
+	 httpRequest(parameter, 0);
+}
+
+function filter_gewicht(eg, mm, checked){
+	var parameter = new Array();
+	 parameter[0] = ['modus', 'filter_gewicht'];
+	 parameter[1] = ['eg', eg];
+	 parameter[2] = ['mm', mm];
+	 parameter[3] = ['checked', checked];
+
+	 httpRequest(parameter, 0);
+}
+
+function checkImage(objekt, eg, mm, top)	{
+	var check;
+	var className = objekt.firstElementChild.className;
+
+	// nur wenn nicht disabled
+	if(className !== 'filter__color-check is-grayed' )	{
+
+		if(objekt.className === 'filter__color-item')	{
+			check = 'true';
+			objekt.className = 'filter__color-item is-checked';
+		} else {
+			check = 'false';
+			objekt.className = 'filter__color-item';
+		}
+
+		filter_merkmal(eg, mm, check);
+	}
+}
+
+function detail_ansicht(id, group){
+	var parameter = new Array();
+
+	if(!group)	{
+		group = 'SEG';
+	}
+
+	 parameter[0] = ['modus', 'detail'];
+	 parameter[1] = ['id', id];
+	 parameter[2] = ['group', group];
+
+	 document.getElementById('top').scrollIntoView();
+	 httpRequest(parameter, 1);
+
+}
+
+function detail_ansicht_switch(box)	{
+	var jetzt = new Date();
+	var bis = 1000*60*60*24*365;
+	var ende = new Date(jetzt.getTime() + bis);
+	document.cookie = "anzeigeform="+box+"; expires="+ende.toGMTString()+";  path=/shop";
+
+	if(box == 'normal')	{
+		document.getElementById('passende_normal').style.display = '';
+		document.getElementById('passende_spar').style.display = 'none';
+	} else {
+		document.getElementById('passende_normal').style.display = 'none';
+		document.getElementById('passende_spar').style.display = '';
+	}
+
+}
+
+function restoreContainer()	{
+	var mainContent = document.getElementById('container').parentNode;
+
+	var container = pageStack.pop();
+	if(container !== undefined)	{
+		mainContent.firstElementChild.outerHTML = '';
+		mainContent.appendChild(container);
+		mainContent.parentNode.className = pageClass.pop();
+		initFilterToggle();
+	}
+}
+
+function add_all()	{
+	var felder = document.getElementById('category-table__content');
+	var formular = felder.getElementsByTagName('input');
+	var max = formular.length;
+	var i = 0;
+	var n = 0;
+	var inputfeld;
+	var feldname;
+	var menge;
+	var id;
+	var artikel;
+	var variante;
+	var params = 'modus=add_item';
+	var flag = false;
+
+	while(i < max)	{
+		inputfeld = formular[i];
+		feldname = inputfeld.name;
+		id = '';
+		menge = 0;
+
+		if(feldname.substr(0, 5) == 'menge')	{
+			menge = inputfeld.value;
+			id = feldname.substr(5);
+			if(menge != '')	{
+				document.getElementById('xmenge' + id).value = menge;
+				inputfeld.value = '';
+			}
+		}
+
+		i++;
+	}
+
+
+	i = 0;
+	while(i < max)	{
+		inputfeld = formular[i];
+		feldname = inputfeld.name;
+		id = '';
+		menge = 0;
+
+		if (feldname.substr(0, 6) == 'xmenge') {
+			menge = inputfeld.value;
+			id = feldname.substr(6);
+			inputfeld.value = '';
+		}
+
+		if (menge > 0) {
+			artikel = document.getElementById('artikelnr' + id).value;
+			variante = document.getElementById('variantenr' + id).value;
+			artikel = escape(artikel);
+			variante = escape(variante);
+			params = params + '&artikel[' + n + ']=' + artikel + '&variante[' + n + ']=' + variante + '&menge[' + n + ']=' + menge;
+			n++;
+		    flag = true;
+		}
+
+		i++;
+	}
+
+	if(flag)	{
+		http.onreadystatechange = handleResponseAddItem;
+		http.open('POST', '/shop/ajax', true);
+	    http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+	    http.send(params);
+	} else {
+		alert ('Zum Bestellen muss mindestens ein Artikel mit einer Menge versehen werden.');
+	}
+}
+
+function addItem(id)	{
+	var artikel = document.getElementById('artikelnr' + id).value;
+	var variante = document.getElementById('variantenr' + id).value;
+	var menge = document.getElementById('xmenge' + id).value * 1;
+	var stmenge = document.getElementById('menge' + id);
+	var anfragemenge = document.getElementById('anfragemenge' + id).value * 1;
+	var offerte;
+
+	if(anfragemenge > 1)	{
+		if(menge >= anfragemenge)	{
+			if(confirm('Als Offertanfrage aufnehmen?'))	{
+				offerte = 1;
+			} else {
+				offerte = 0;
+			}
+		} else {
+			offerte = 0;
+		}
+	} else {
+		offerte = 0;
+	}
+
+	if(stmenge)	{
+		menge = stmenge.value * 1;
+		stmenge.value = '';
+	}
+
+	//menge = menge.replace(',', '.');
+
+	if(menge > 0){
+		document.getElementById('xmenge' + id).value = '';
+
+		//encodeURIComponent einbauen
+		artikel = encodeURIComponent(artikel);
+		variante = encodeURIComponent(variante);
+
+		params = 'modus=add_item&artikel=' + artikel + '&variante=' + variante + '&menge=' + menge + '&offerte=' + offerte;
+
+		http.open('POST', '/shop/ajax', true);
+		http.onreadystatechange = handleResponseAddItem;
+		http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+		http.send(params);
+	} else {
+		alert('Bitte geben Sie eine Menge ein');
+		document.getElementById('xmenge' + id).focus();
+	}
+}
+
+function modifyItem(id)	{
+	var menge = document.getElementById('menge' + id)
+	var xmenge = document.getElementById('xmenge' + id).value;
+	var z = id.split('-');
+	var wk = z[0];
+	var pos = z[1];
+
+	if(menge)	{
+		menge = menge.value;
+	} else {
+		menge = xmenge;
+	}
+
+	if(menge > 0){
+		params = 'modus=modify_item&menge=' + menge + '&warenkorb=' + wk + '&pos=' + pos;
+
+		http.open('POST', '/shop/ajax', true);
+		http.onreadystatechange = handleResponseModifyItem;
+		http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+		http.send(params);
+	} else {
+		alert('Bitte geben Sie eine Menge ein');
+		document.getElementById('xmenge' + id).focus();
+	}
+
+}
+
+function addItemSelect()	{
+	var form = document.select_commissions;
+	var max = form.length;
+	var i = 0;
+	var params = 'modus=add_item_select';
+
+	while( i < max)	{
+		if(form[i].type == 'checkbox')	{
+			params += '&' + form[i].name + '=' +  form[i].checked;
+		} else {
+			params += '&' + form[i].name + '=' +  encodeURIComponent(form[i].value);
+		}
+		i++;
+	}
+
+	http.open('POST', '/shop/ajax', true);
+	http.onreadystatechange = handleResponseAddItem;
+	http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+	http.send(params);
+
+	navLayer(false);
+	hideModalBox();
+
+}
+
+function handleResponseAddItem()	{
+	if(http.readyState === 4){
+		var antwort = http.responseText;
+		console.log(antwort);
+		var info = antwort.split('|||');
+		var posanzeige = document.getElementById('positionsanzahl');
+		var flyout =  document.getElementById('wk_flyout');
+		var mb = document.getElementById('message_box');
+		var mc = document.getElementById('message_container');
+
+		if(info[0] === 'OK' || info[0] === 'Zuschnitt')	{
+			mb.innerHTML = info[3];
+			mc.style.display = 'block';
+			setTimeout('hideMessageBox()', 2000);
+			posanzeige.innerHTML = info[1];
+			flyout.innerHTML = info[2];
+		}
+
+		if(info[0] === 'Zuschnitt')	{
+			var modal = document.getElementById('modalbox');
+			modal.outerHTML = info[4];
+			closeModalBox();
+			navLayer(true);
+		}
+		else if(info[0] === 'Auswahl')	{
+			var modal = document.getElementById('modalbox');
+			modal.outerHTML = info[1];
+			closeModalBox();
+			navLayer(true);
+		}
+	}
+}
+
+function handleResponseModifyItem()	{
+	if(http.readyState === 4){
+		// Do nothing
+	}
+}
+
+function handleResponseComplist()	{
+	if(http.readyState === 4){
+		handleResponseModal();
+		if(http.responseText == 'close')	{
+			return;
+		} else {
+			checkComplistImagesLoaded();
+		}
+	}
+}
+
+function checkComplistImagesLoaded()	{
+	var modal = document.getElementById('modalbox');
+	var imagelist = modal.getElementsByTagName('img');
+	var max = imagelist.length;
+	var i = 0;
+	var flag = true;
+
+	while( i < max)	{
+		if(imagelist[i].complete === false)	{
+			flag = false;
+		}
+		i++;
+	}
+
+	counter++;
+	if(counter == 80)	{
+		flag = true;
+	}
+
+	if(flag)	{
+		compareListPropertyHeight();
+	} else {
+		setTimeout(checkComplistImagesLoaded, 50);
+	}
+}
+
+function handleResponseBewertung()	{
+	handleResponseModal();
+	if(http.readyState === 4){
+		$('#js-rating-form').barrating();
+	}
+}
+
+function handleResponseModal()	{
+	if(http.readyState === 4){
+		var antwort = http.responseText;
+		var modal = document.getElementById('modalbox');
+		if(antwort == 'close' || antwort == '')	{
+			hideModalBox();
+		} else {
+			modal.outerHTML = antwort;
+			closeModalBox();
+			navLayer(true);
+			openModalBox();
+		}
+	}
+}
+
+function handleResponseReload()	{
+	if(http.readyState === 4){
+		location.href = location.href;
+	}
+}
+
+function hideMessageBox()	{
+    var mc = document.getElementById('message_container');
+    mc.style.display = 'none';
+}
+
+function hideModalBox()	{
+	var modal = document.getElementById('modalbox');
+	var body = document.getElementsByTagName('body');
+	modal.style.display = 'none';
+	modal.className = '';
+
+	navLayer(false);
+	$('body').removeClass('box--modal-open');
+}
+
+function toggleFilterView(objekt)	{
+	var classname = objekt.parentElement.className;
+
+	if(classname === 'filter__box')	{
+		objekt.parentElement.className = 'filter__box is-open';
+		objekt.nextElementSibling.style.display = 'block';
+	}
+	else if(classname === 'filter__box is-open')	{
+		objekt.parentElement.className = 'filter__box';
+		objekt.nextElementSibling.style.display = 'none';
+	}
+}
+
+function trennschnittJa()	{
+		var form = document.trennschnitt;
+
+		params = 'modus=zuschnitt_muster&wk=' + form.wk.value + '&pos=' + form.pos.value;
+
+		http.open('POST', '/shop/ajax', true);
+		http.onreadystatechange = handleResponseModal;
+		http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+		http.send(params);
+}
+
+function zuschnittMuster()	{
+	var formular = document.trennschnitt;
+	var modal = document.getElementById('modalbox');
+	var	params = new Array();
+	params[0] = ['modus', 'zuschnitt_daten'];
+	params[1] = ['typ', formular.submitted.value];
+	params[2] = ['warenkorb', formular.warenkorb.value];
+	params[3] = ['pos', formular.pos.value];
+
+	httpParameter(params);
+	modalStack.push(modal);
+}
+
+function setTrennschnittTyp(radio)	{
+	var liste = document.trennschnitt.getElementsByTagName('input');
+	var i = liste.length;
+
+	for(i in liste)	{
+
+		if(liste[i].type === 'radio')	{
+			liste[i].parentNode.parentNode.className = 'trennschnitt-form__type';
+		}
+	}
+
+	radio.parentNode.parentNode.className += ' is-active';
+	document.trennschnitt.submitted.value = radio.value;
+
+}
+
+function trennschnittDaten()	{
+	var ts= document.trennschnitt;
+	var aLang = ts.aLang.value * 1;
+	var aBreit = ts.aBreit.value * 1;
+	var i;
+	var inputid;
+	var params = 'modus=zuschnitt_output';
+	var wert;
+
+	params += '&warenkorb=' + ts.warenkorb.value;
+	params += '&position=' +  ts.position.value;
+
+	for(i = 1; i <= aBreit; i++)		{
+		inputid = 'ih' + i;
+		wert = document.getElementById(inputid).value;
+		params += '&b_schnitt' + i + '=' + wert;
+	}
+	for(i = 1; i <= aLang; i++)		{
+		inputid = 'iv' + i;
+		wert = document.getElementById(inputid).value;
+		params += '&l_schnitt' + i + '=' + wert;
+	}
+
+
+	http.open('POST', '/shop/ajax', true);
+	http.onreadystatechange = handleResponseAddItem;
+	http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+	http.send(params);
+
+	hideModalBox();
+
+}
+
+
+function cutCalculation(art)	{
+	var ts= document.trennschnitt;
+	var i = 1;
+	var max;
+	var abstand = 0;
+	var id;
+	var iid;
+	var z = 0;
+	var wert = 0;
+	var rest = 0;
+	var aLang = ts.aLang.value * 1;
+	var aBreit = ts.aBreit.value * 1;
+	var gesamtLang = ts.gesamtLang.value * 1;
+	var gesamtBreit = ts.gesamtBreit.value * 1;
+
+
+	if(art === 'h')	{
+		max = aBreit;
+	} else {
+		max = aLang;
+	}
+
+	while(i <= max)	{
+		id = art + i;
+		iid = 'i' + art + i;
+		z = document.getElementById(iid).value * 1;
+		if(!z)	{
+			z = 0;
+		}
+		if(z > 0)	{
+			document.getElementById(id).className = art + '-line-green';
+		}
+		abstand = abstand + z + 5;
+
+		if(art === 'h')	{
+			if(z === 0)	{
+				wert = 100 / aLang * i;
+				wert = Math.round(wert);
+				document.getElementById(id).className = art + '-line';
+			} else {
+				wert = abstand / gesamtBreit * 100;
+				wert = Math.floor(wert * 10) / 10;
+				document.getElementById(id).className = art + '-line-green';
+			}
+
+			if(wert > 100)	{
+				wert = 100;
+			}
+			rest = gesamtBreit - abstand;
+			document.getElementById('ihr').value = rest;
+			document.getElementById(id).style.top = wert + '%';
+		}
+		else if(art === 'v')	{
+			if(z === 0)	{
+				wert = 100 / aBreit * i;
+				wert = Math.round(wert);
+				document.getElementById(id).className = art + '-line';
+			} else {
+				wert = abstand / gesamtLang * 100;
+				wert = Math.floor(wert * 10) / 10;
+				document.getElementById(id).className = art + '-line-green';
+			}
+
+			if(wert > 100)	{
+				wert = 100;
+			}
+			rest = gesamtLang - abstand;
+			document.getElementById('ivr').value = rest;
+			document.getElementById(id).style.left = wert + '%';
+		}
+
+		if(wert > 99)	{
+			document.getElementById(id).className = art + '-line-red';
+		}
+		i++;
+	}
+}
+
+
+function displayBewertung(artikel, variante, antwort)	{
+
+	var params = 'modus=bewertung&artikel=' + artikel + '&variante=' + variante + '&antwort=' + antwort;
+	http.open('POST', '/shop/ajax', true);
+	http.onreadystatechange = handleResponseBewertung;
+	http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+	http.send(params);
+}
+
+function sendBewertung()	{
+	var bw = document.bewertung;
+	var artikel = encodeURIComponent(bw.artikel.value);
+	var variante = encodeURIComponent(bw.variante.value);
+	var rating = encodeURIComponent(bw.rating.value);
+	var titel = encodeURIComponent(bw.titel.value);
+	var antwort = encodeURIComponent(bw.antwort.value);
+	var kommentar = encodeURIComponent(bw.kommentar.value);
+
+	var params = 'modus=bewertung_speichern&artikel=' + artikel + '&variante=' + variante
+	+ '&titel=' + titel + '&kommentar=' + kommentar + '&bewertung=' + rating + '&antwort=' + antwort;
+	http.open('POST', '/shop/ajax', true);
+	http.onreadystatechange = reloadContainer;
+	http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+	http.send(params);
+	hideModalBox();
+	document.getElementById('bewertungen').scrollIntoView();
+}
+
+function toggleNextElementSibling(objekt)	{
+	var next = objekt.nextElementSibling.style;
+
+	if(next.display === '')	{
+		next.display = 'block'
+	} else {
+		next.display = '';
+	}
+}
+
+function zeigePassende()	{
+	var passende = document.getElementById('passende');
+	var passendeBox = document.getElementById('passende_spar');
+	var liste = passende.getElementsByClassName('product product-list__item');
+	var listeBox = passendeBox.getElementsByClassName('productbox-list__item productbox');
+	var max = liste.length;
+	var i = 2;
+	//var anker = document.getElementById('anker_p');
+	while(i < max)	{
+		liste[i].style.display = '';
+		i++;
+	}
+
+	var max = listeBox.length;
+	var i = 3;
+
+	while(i < max)	{
+		listeBox[i].style.display = '';
+		i++;
+	}
+
+	//anker.style.display = 'none';
+
+}
+
+
+function addComplist(artikel, variante)	{
+	var parameter = new Array();
+	parameter[0] = ['modus', 'addComplist'];
+	parameter[1] = ['artikel', artikel];
+	parameter[2] = ['variante', variante];
+
+	var pl = new Array();
+	var i;
+	var params;
+
+	for ( i in parameter) {
+		if(i >= 0)	{
+			parameter[i][1] = encodeURIComponent(parameter[i][1]);
+			pl[i] = parameter[i].join('=');
+		}
+	}
+	params = pl.join('&');
+	http.open('POST', '/shop/ajax', true);
+	http.onreadystatechange = handleResponseComplist;
+    http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    http.send(params);
+
+}
+
+function rem_complist(artikel, variante)	{
+	var parameter = new Array();
+	parameter[0] = ['modus', 'rem_complist'];
+	parameter[1] = ['artikel', artikel];
+	parameter[2] = ['variante', variante];
+	http.onreadystatechange = handleResponseModal;
+	httpParameter(parameter);
+}
+
+function showComplist(liste)	{
+	var parameter = new Array();
+	parameter[0] = ['modus', 'show_complist'];
+	parameter[1] = ['aktiv', liste];
+	http.onreadystatechange = handleResponseComplist;
+	httpParameter(parameter);
+}
+
+
+function addFavorit(artikel, variante)	{
+	var parameter = new Array();
+	parameter[0] = ['modus', 'add_favorit'];
+	parameter[1] = ['artikel', artikel];
+	parameter[2] = ['variante', variante];
+
+	var pl = new Array();
+	var i;
+	var params;
+
+	for ( i in parameter) {
+		if(i >= 0)	{
+			parameter[i][1] = encodeURIComponent(parameter[i][1]);
+			pl[i] = parameter[i].join('=');
+		}
+	}
+	params = pl.join('&');
+	http.open('POST', '/shop/ajax', true);
+	http.onreadystatechange = handleResponseModal;
+    http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    http.send(params);
+
+}
+
+function delFavorit(artikel, variante, id)	{
+	var parameter = new Array();
+	parameter[0] = ['modus', 'delete_favorit'];
+	parameter[1] = ['artikel', artikel];
+	parameter[2] = ['variante', variante];
+	parameter[3] = ['id', id];
+
+	http.onreadystatechange = '';
+	httpParameter(parameter);
+
+	setTimeout('location.reload()', 150);
+}
+
+function modifyFavorit()	{
+	var formular = document.modfav;
+	var params = [];
+	var i = 0;
+	var max = formular.length;
+	var parm;
+
+	while(i < max)	{
+		if(formular[i].type == 'checkbox')	{
+			params[i] = formular[i].name + '=' + formular[i].checked;
+		} else {
+			params[i] = formular[i].name + '=' + encodeURIComponent(formular[i].value);
+		}
+
+		i++;
+	}
+
+	parm = 'modus=fav_modify&' + params.join('&');
+	http.open('POST', '/shop/ajax', true);
+	http.onreadystatechange = handleResponseModal;
+    http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    http.send(parm);
+}
+
+
+
+function httpParameter(parameter)	{
+	var pl = new Array();
+	var i;
+	var params;
+
+	for ( i in parameter) {
+		if(i >= 0)	{
+			parameter[i][1] = encodeURIComponent(parameter[i][1]);
+			pl[i] = parameter[i].join('=');
+		}
+	}
+	params = pl.join('&');
+	http.onreadystatechange = handleResponseModal;
+	http.open('POST', '/shop/ajax', true);
+    http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    http.send(params);
+}
+
+function set_usermode(modus)	{
+	var jetzt = new Date();
+	var gueltig = new Date(jetzt.getTime() + 5622400000);
+	document.cookie = "usermode="+ modus +"; expires=" + gueltig.toGMTString() + ";";
+}
+
+function favoritListSort()	{
+	var liste = document.getElementById('sortierliste');
+	var elemente = liste.getElementsByTagName('input');
+	var max = elemente.length;
+	var i = 0;
+	var ids = [];
+
+	while(i < max)	{
+		ids.push(elemente[i].value);
+		i++;
+	}
+
+	var params = 'modus=fav_listsort&liste=' + ids.join(',');
+	http.open('POST', '/shop/ajax', true);
+	//http.onreadystatechange = handleResponseModal;
+    http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    http.send(params);
+
+}
+
+
+function sortFavoriten()	{
+	var liste = document.getElementById('sortierliste');
+	var felder = liste.getElementsByTagName('input');
+	var max = felder.length;
+	var i = 0;
+
+	while(i < max)	{
+		document.favorites.reihenfolge.value += felder[i].value + '|';
+		i++;
+	}
+
+	return true;
+}
+
+function deleteBasket(id)	{
+
+	if(confirm('Kommission löschen?'))	{
+		parm = 'modus=delete_basket&basket=' + id;
+		http.open('POST', '/shop/ajax', true);
+		http.onreadystatechange = handleResponseReload;
+		http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+		http.send(parm);
+	}
+}
+
+function deleteItem(pos)	{
+
+	if(confirm('Artikel löschen?'))	{
+		parm = 'modus=delete_item&item=' + pos;
+		http.open('POST', '/shop/ajax', true);
+		http.onreadystatechange = handleResponseReload;
+		http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+		http.send(parm);
+	}
+}
+
+function copyToCommissions()	{
+	var cl = document.commission_list;
+	var max = cl.length;
+	var i = 0;
+	var item = cl.item.value;
+	var params = 'modus=copy_to_commissions';
+
+	while(i < max)	{
+		if(cl[i].type == 'checkbox')	{
+			if(cl[i].checked === true)	{
+				params += '&' + cl[i].name + '=true';
+			}
+		}
+		i++;
+	}
+
+	params += '&item='  + item;
+	http.open('POST', '/shop/ajax', true);
+	http.onreadystatechange = handleResponseReload;
+	http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+	http.send(params);
+
+}
+
+function addCommission(destination)	{
+	var bezeichnung = document.getElementById('bezeichnung').value;
+	var param = [];
+
+	if(destination == 'copy_item')	{
+		var pos = document.getElementById('pos').value;
+		param[0] = ['modus', 'add_commission'];
+		param[1] = ['item', pos];
+		param[2] = ['bezeichnung', bezeichnung];
+		param[3] = ['destination', destination];
+	}
+	else if(destination == 'copy_basket')	{
+		from = document.copyForm.from.value;
+		param[0] = ['modus', 'add_commission'];
+		param[1] = ['from', from];
+		param[2] = ['bezeichnung', bezeichnung];
+		param[3] = ['destination', destination];
+	} else {
+		// add_item
+/*		var artikel = document.getElementById('artikel').value;
+		var variante = document.getElementById('variante').value;
+		var menge = document.getElementById('menge').value;
+		var offerte = document.getElementById('offerte').value;
+		param[1] = ['artikel', artikel];
+		param[2] = ['variante', variante];
+		param[3] = ['menge', menge];
+		param[4] = ['offerte', offerte]; */
+		param[0] = ['modus', 'add_commission'];
+		param[1] = ['bezeichnung', bezeichnung];
+		param[2] = ['destination', destination];
+	}
+
+	httpParameter(param);
+
+}
+
+
+function copyItem(pos)	{
+	var param = [];
+	param[0] = ['modus', 'copy_item'];
+	param[1] = ['item', pos];
+	httpParameter(param);
+}
+
+function copyBasket(von)	{
+	var cl = document.copyForm;
+	var max = cl.length;
+	var i = 0;
+	var params = 'modus=copy_basket&von=' + von;
+
+	while(i < max)	{
+		if(cl[i].type == 'checkbox')	{
+			if(cl[i].checked === true)	{
+				params += '&' + cl[i].name + '=true';
+			}
+		}
+		i++;
+	}
+
+	http.open('POST', '/shop/ajax', true);
+	http.onreadystatechange = handleResponseReload;
+	http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+	http.send(params);
+
+}
+
+function copyBasketForm(von)	{
+	var param = [];
+	param[0] = ['modus', 'copy_basket_form'];
+	param[1] = ['from', von];
+	httpParameter(param);
+}
+
+function loadBigMenu()	{
+
+	var big = sessionStorage.getItem('shopBigNavigation');
+	var bigmobile = sessionStorage.getItem('shopMobileNavigation');
+
+	if(big == null || big == '')	{
+		parm = 'modus=load_navigation';
+		http.open('POST', '/shop/ajax', true);
+		http.onreadystatechange = storeBigMenu;
+		http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+		http.send(parm);
+
+	} else {
+		var bigNavi = document.getElementById('main_navcontainer');
+		bigNavi.innerHTML = big;
+	}
+
+	if(bigmobile == null || bigmobile == '')	{
+		parm = 'modus=load_mobile_navigation';
+		http2.open('POST', '/shop/ajax', true);
+		http2.onreadystatechange = storeMobileMenu;
+		http2.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+		http2.send(parm);
+
+	} else {
+		var mobileNavi = document.getElementById('mobile_navcontainer');
+		mobileNavi.innerHTML = bigmobile;
+	}
+
+}
+
+
+function storeBigMenu()	{
+	if(http.readyState === 4){
+		sessionStorage.setItem('shopBigNavigation', http.responseText);
+		document.getElementById('main_navcontainer').innerHTML = http.responseText;
+	}
+}
+
+
+
+function storeMobileMenu()	{
+	if(http2.readyState === 4){
+		sessionStorage.setItem('shopMobileNavigation', http2.responseText);
+		document.getElementById('mobile_navcontainer').innerHTML = http2.responseText;
+	}
+}
+
+function resetBigMenu()	{
+	sessionStorage.setItem('shopBigNavigation', '');
+	sessionStorage.setItem('shopMobileNavigation', '');
+}
+
+function loadCommissionText(id)	{
+	var parameter = [];
+
+	parameter[0] = ['modus', 'load_commission_text'];
+	parameter[1] = ['id', id];
+	httpParameter(parameter);
+}
+
+function saveCommissionText(objekt)	{
+	var text = objekt.bezeichnung.value;
+	var id = objekt.id.value;
+	var parameter = [];
+	var oldValue = document.getElementById('checkout_commission_' + id).innerHTML;
+	oldValue = oldValue.trim();
+
+	parameter[0] = ['modus', 'save_commission_text'];
+	parameter[1] = ['id', id];
+	parameter[2] = ['text', text];
+	httpParameter(parameter);
+
+	if(oldValue.substr(0, 11) === 'Kommission:')	{
+		text = 'Kommission: ' + text;
+	}
+
+	document.getElementById('checkout_commission_' + id).innerHTML = text;
+}
+
+function modifyCut(wk, pos)	{
+	var parameter = [];
+
+	parameter[0] = ['modus', 'modify_cut'];
+	parameter[1] = ['pos', pos];
+	parameter[2] = ['wk', wk];
+	httpParameter(parameter);
+}
+
+function changeAction(target)	{
+	var formular = document.wk_post;
+	formular.action = target;
+
+	formular.submit();
+}
+
+function selectAll(divid, status)	{
+	var liste = document.getElementById(divid);
+	var checkBoxes = liste.getElementsByTagName('input');
+	var max = checkBoxes.length;
+	var i = 0;
+
+
+	while (i < max)	{
+		if(checkBoxes[i].type == 'checkbox')	{
+			checkBoxes[i].checked = status;
+		}
+
+		i++;
+	}
+
+}
+
+function proposal(box)	{
+	var term = box.value;
+	if(window.innerWidth >= 767)	{
+		if(term.length > 3)	{
+			params = 'term=' + term;
+			http.open('POST', '/shop/vorschlag', true);
+			http.onreadystatechange = handleProposal;
+			http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+			http.send(params);
+		} else {
+			var container = document.getElementById('search_container');
+			container.innerHTML = '';
+			container.style.display = "none";
+			navLayer(false);
+			document.getElementById('searchitem').autocomplete = '';
+		}
+	}
+}
+
+function handleProposal()	{
+	if(http.readyState === 4){
+		var antwort = http.responseText;
+		var container = document.getElementById('search_container');
+		if(antwort != '')	{
+			container.innerHTML = antwort;
+			container.style.display = "block";
+			navLayer(true);
+			document.getElementById('searchitem').autocomplete = 'Off';
+		} else {
+			container.innerHTML = '';
+			container.style.display = "none";
+			navLayer(false);
+			document.getElementById('searchitem').autocomplete = '';
+
+		}
+	}
+}
+
+function getProposal(proposal)	{
+	document.getElementById('searchitem').value = proposal;
+}
+
+function moveProposal(proposal, objekt)	{
+	document.getElementById('searchitem').value = proposal;
+	params = 'term=' + proposal;
+	http.open('POST', '/shop/preview', true);
+	http.onreadystatechange = handlePreview;
+	http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+	//objekt.parentElement.className = 'search-layer__cat-item is-active';
+	http.send(params);
+}
+
+function handlePreview()	{
+	if(http.readyState === 4){
+		var antwort = http.responseText;
+		var container = document.getElementById('result-wrapper');
+		container.innerHTML = antwort;
+	}
+}
+
+function proposalClassNormal(objekt)	{
+	//objekt.parentElement.className = 'search-layer__cat-item';
+}
+
+function sortWGR()	{
+	var ul = document.getElementById('wgr_sort');
+	var liste = ul.getElementsByTagName('li');
+	var max = liste.length;
+	var i = 0;
+	var folge = '';
+
+	while(max > i)	{
+		folge = folge + liste[i].attributes.wert.value + ' ';
+		i++;
+	}
+	folge = folge.trim();
+
+	document.getElementById('reihenfolge').value = folge;
+	return true;
+}
+
+function calcTotal()	{
+	var lang  = document.getElementById('terraceLength').value;
+	var breit = document.getElementById('terraceWidth').value;
+	var total = lang * breit / 100;
+
+	total = Math.round(total) / 100;
+	document.getElementById('terraceTotal').value = total;
+}
+
+function changeConfig()	{
+	document.configuratorForm.newid.value = 'change';
+	document.configuratorForm.submit();
+}
+
+function calcSum()	{
+
+	var posnetto = document.orderForm.getElementsByTagName('input');
+	var max = posnetto.length;
+	var i = 0;
+	var cbName;
+	var summe = 0;
+	var aSumme = 0;
+
+	while (i < max )	{
+		if(posnetto[i].type === 'checkbox')	{
+			cbName = posnetto[i].name;
+			cbName = cbName.replace('product[', '');
+			cbName = cbName.replace(']', '');
+
+			if(posnetto[i].checked === true) {
+				summe = summe + document.getElementById('posnetto_' + cbName).value * 100;
+			}
+		}
+
+		i++;
+	}
+
+	aSumme = Math.round(summe) / 100;
+	if(Math.round(summe / 100)  === summe / 100)	{
+		aSumme = aSumme + '.00';
+	}
+	else if(Math.round(summe / 10) === summe / 10)	{
+		aSumme = aSumme + '0';
+	}
+
+	document.getElementById('summe').innerHTML = aSumme;
+}
+
+
+function modalResellerKunde(kunde)	{
+
+		params = 'modus=reseller_modal&kunde=' + kunde;
+		closeModalBox();
+		navLayer(false);
+		http.open('POST', '/shop/ajax', true);
+		http.onreadystatechange = handleResponseModal;
+		http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+		http.send(params);
+}
+
+
+function move_item(from, ident, to)	{
+	var nach = to.replace('checkout-commission__item', '');
+	var splitter = ident.split('-') ;
+	var pos = splitter[1];
+	var warenkorb = splitter[0];
+
+   	if(warenkorb !== nach)	{
+		var params = "modus=move_item&von=" + warenkorb + "&nach=" + nach + "&pos=" + pos;
+		http.open('POST', '/shop/ajax', true);
+		http.onreadystatechange = handleResponseReload;
+		http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+		http.setRequestHeader("Content-length", params.length);
+		http.setRequestHeader("Connection", "close");
+
+		http.send(params);
+	}
+
+}
+
+function priceListConfirmation()	{
+	var params = "modus=show_pl_confirmation";
+	http.open('POST', '/shop/ajax', true);
+	http.onreadystatechange = handleResponseModal;
+	http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+	http.setRequestHeader("Connection", "close");
+	navLayer(true);
+	http.send(params);
+}
+
+function showAGB()	{
+	var params = "modus=show_agb";
+	http.open('POST', '/shop/ajax', true);
+	http.onreadystatechange = handleResponseModal;
+	http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+	http.setRequestHeader("Connection", "close");
+	navLayer(true);
+	http.send(params);
+}
+
+function acceptAGB()	{
+	var params = "modus=accept_agb";
+	http.open('POST', '/shop/ajax', true);
+	http.onreadystatechange = handleResponseModal;
+	http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+	http.setRequestHeader("Connection", "close");
+	http.send(params);
+}
+
+function loginMarker()	{
+	var xhttp = new XMLHttpRequest();
+	xhttp.open('GET', '/?eID=FrontendAutoLogin', true);
+	xhttp.send();
+}
+
+function logoutMarker()	{
+	var xhttp = new XMLHttpRequest();
+	xhttp.open('GET', '/?eID=FrontendLogout', true);
+	xhttp.send();
+}
+
+function clickedItem(artikel)	{
+	var gespeichert = sessionStorage.getItem('schreiner_artikel');
+	if(gespeichert === null) {
+		sessionStorage.setItem('schreiner_artikel', artikel + "\n\n");
+	} else {
+		sessionStorage.setItem('schreiner_artikel', gespeichert + artikel + "\n\n");
+	}
+	
+	var info = "Der Artikel wurde gespeichert und kann anhand der Handwerker Suche " + 
+			"über einen ausgewählten Handwerker bei uns bezogen werden, da wir nur Handwerker " + 
+			"direkt beliefern. Möchten Sie noch weitere Artikel hinzufügen?";
+	if(!confirm(info)) {
+		location.href = '/schreiner-suche';
+	}
+}
+
+function downloadItems()	{
+	window.open('/shop/wkdownload');
+	return false;
+}
+
+function newTab(address)	{
+	window.open(address);
+}
+
+function sendResellerPdf(id)	{
+	var uri = '/shop/reseller/senden/' + id;
+
+	http.open('GET', uri, true);
+	http.onreadystatechange = handleResponseSendPdf;
+	http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+	http.send();
+
+}
+
+function handleResponseSendPdf()	{
+	if(http.readyState === 4){
+		var antwort = http.responseText;
+		var mb = document.getElementById('message_box');
+		var mc = document.getElementById('message_container');
+
+		mb.innerHTML = antwort;
+		mc.style.display = 'block';
+		setTimeout('hideMessageBox()', 5000);
+
+	}
+}
+
+function checkDoorComplete()	{
+	var breite = document.getElementById('doorconfigurator_width');
+	var hoehe =  document.getElementById('doorconfigurator_height');
+	var dicke =  document.getElementById('doorconfigurator_thickness');
+	var farbe =  document.door_settings.doorconfigurator_color;
+	var garnitur =  document.door_settings.doorconfigurator_garnitur;
+	var message;
+
+	var senden = true;
+
+	if(breite.selectedOptions[0].value === '')	{
+		senden = false;
+		message = "Bitte eine Breite wählen";
+		breite.focus();
+	}
+	else if(hoehe.selectedOptions[0].value === '')	{
+		senden = false;
+		message = "Bitte eine Höhe wählen";
+		hoehe.focus();
+	}
+	if(dicke !== null)	{
+		if(dicke.selectedOptions[0].value === '')	{
+			senden = false;
+			message = "Bitte eine Mauerdicke wählen";
+			dicke.focus();
+		}
+	}
+	if(farbe.value === '')	{
+		senden = false;
+		message = "Bitte eine Farbe wählen";
+	}
+	if(garnitur.value === '')	{
+		senden = false;
+		message = "Bitte eine Garnitur wählen";
+	}
+
+	if(senden)	{
+		document.door_settings.action = '/shop/tuerenkonfigurator/abschluss';
+		document.door_settings.submit();
+	} else {
+		var mb = document.getElementById('message_box');
+		var mc = document.getElementById('message_container');
+
+		mb.innerHTML = message;
+		mc.style.display = 'block';
+		setTimeout('hideMessageBox()', 2000);
+//		alert(message);
+	}
+
+}
+
+function sendForm()	{
+
+	var formular = document.door_settings;
+
+	var breite = formular.doorconfigurator_width.selectedOptions[0].value;
+	var hoehe =  formular.doorconfigurator_height.selectedOptions[0].value;
+	if(formular.doorconfigurator_thickness)	{
+		var dicke =  formular.doorconfigurator_thickness.selectedOptions[0].value;
+	} else {
+		var dicke = '';
+	}
+	var farbe =  formular.doorconfigurator_color.value;
+	var garnitur =  formular.doorconfigurator_garnitur.value;
+
+	var params = 'doorconfigurator_width=' + breite +
+			'&doorconfigurator_height=' + hoehe +
+			'&doorconfigurator_thickness=' + dicke +
+			'&doorconfigurator_color=' + farbe +
+			'&doorconfigurator_garnitur=' + garnitur;
+
+
+	http.open('POST', '/shop/tuerenkonfigurator/select', true);
+	http.onreadystatechange = handleResponseDoors;
+    http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    http.send(params);
+
+}
+
+function handleResponseDoors()	{
+	if(http.readyState === 4){
+		var antwort = http.responseText;
+		var box = document.getElementById('door_configurator');
+		box.outerHTML = antwort;
+	}
+}
+
+function updateReferenz(box)	{
+	params = 'modus=update_referenz&referenz=' + box.value + '&id=' + box.id;
+	http.open('POST', '/shop/ajax', true);
+
+	http.onreadystatechange = handleResponseReferenz;
+    http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    http.send(params);
+}
+
+function handleResponseReferenz()	{
+	if(http.readyState === 4){
+		var antwort = http.responseText;
+		var q = antwort.split('||');
+		var box = document.getElementById(q[0]);
+		box.value = q[1];
+	}
+}
+
+function reSort(href)	{
+	location.href = href;
+}
+
+function clickDeliveryButton() {
+	var del1 = document.getElementById('radio00d1');
+	var del2 = document.getElementById('radio00d2');
+	
+	del1.checked = false;
+	del2.checked = false;
+}
+
+
+
+function modAp(ident)	{
+	var params = 'ident=' + ident;
+
+	http.open('POST', '/shop/benutzerverwaltung', true);
+	http.onreadystatechange = handleResponseAp;
+	http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+	http.send(params);
+}
+
+function handleResponseAp()	{
+	if(http.readyState === 4){
+		var antwort = http.responseText;
+		let modal = document.getElementById('add-customer-modal');
+		modal.innerHTML = antwort;
+		customerModalOpen();
+		
+		const phoneInput = document.getElementById('add-customer-phone');
+		phoneInput.addEventListener('input', function (e) {
+			const cursorPos = phoneInput.selectionStart;
+			const formatted = formatPhoneNumber(phoneInput.value);
+			phoneInput.value = formatted;
+		});		
+
+		const mobileInput = document.getElementById('add-customer-mobile');
+		mobileInput.addEventListener('input', function (e) {
+			const cursorPos = mobileInput.selectionStart;
+			const formatted = formatPhoneNumber(mobileInput.value);
+			mobileInput.value = formatted;
+		});		
+	}
+}
+
+function showAp(ident)	{
+	var params = 'modus=get_userdata&ident=' + ident;
+	
+	http.open('POST', '/shop/ajax', true);
+	http.onreadystatechange = handleResponseAp;
+	http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+	http.send(params);
+}
+
+function deleteAp(ident)	{
+	var params = 'modus=delete_user&ident=' + ident;
+	
+	http.open('POST', '/shop/ajax', true);
+	http.onreadystatechange = handleResponseAp;
+	http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+	http.send(params);
+}
+
+function customerModalOpen() {
+	const modal = document.getElementById('add-customer-modal');
+	const password = document.getElementById('add-customer-password');
+	const passwordRepeat = document.getElementById('add-customer-password-repeat');
+	const submitBtn = document.getElementById('submitBtn');	
+	
+	if(password !== null) {
+		function checkPasswords() {
+			if (password.value === passwordRepeat.value) {
+				submitBtn.disabled = false;
+				submitBtn.className = 'btn btn--bold';
+			} else {
+				submitBtn.disabled = true;
+				submitBtn.className = 'btn btn--bold btn--dark-gray';
+			}
+		}	
+		password.addEventListener('input', checkPasswords);
+		passwordRepeat.addEventListener('input', checkPasswords);	
+	}
+	modal.className = modal.className + ' is-visible';
+	navLayer(true);
+}
+
+function customerModalClose() {
+	const modal = document.getElementById('add-customer-modal');
+	modal.classList.remove('is-visible');
+	navLayer(false);
+}
+
+function formatPhoneNumber(value) {
+	// Entferne alles außer Ziffern
+	let digits = value.replace(/\D/g, '');
+
+	// Maximal 14 Ziffern erlaubt
+	digits = digits.substring(0, 14);
+
+	// Füge Leerzeichen gemäß Format hinzu
+	const parts = [];
+	if (digits.length > 0)
+		parts.push(digits.substring(0, 4));
+	if (digits.length > 4)
+		parts.push(digits.substring(4, 6));
+	if (digits.length > 6)
+		parts.push(digits.substring(6, 9));
+	if (digits.length > 9)
+		parts.push(digits.substring(9, 11));
+	if (digits.length > 11)
+		parts.push(digits.substring(11, 13));
+
+	return parts.join(' ');
+}
+

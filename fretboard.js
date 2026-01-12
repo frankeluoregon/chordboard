@@ -88,7 +88,7 @@ const Fretboard = {
     /**
      * Update the fretboard with note markers
      */
-    updateFretboard(containerId, rootNote, chordType, scaleType, nextChordRoot = null) {
+    updateFretboard(containerId, rootNote, chordType, scaleType, nextChordRoot = null, showLeadingNotes = false, showScaleNotes = true) {
         const container = document.getElementById(containerId);
         const chordNotes = MusicTheory.getChordNotes(rootNote, chordType);
         const scaleNotes = MusicTheory.getScaleNotes(rootNote, scaleType);
@@ -113,40 +113,40 @@ const Fretboard = {
                     MusicTheory.areNotesEqual(note, scaleNote)
                 );
                 const isRoot = MusicTheory.areNotesEqual(note, rootNote);
-                // Leading note is a half step below the next chord's root
-                const leadingNote = nextChordRoot ? MusicTheory.transposeNote(nextChordRoot, -1) : null;
+                // Leading note is a half step below the next chord's root (only in progression mode)
+                const leadingNote = showLeadingNotes && nextChordRoot ? MusicTheory.transposeNote(nextChordRoot, -1) : null;
                 const isLeadingNote = leadingNote && MusicTheory.areNotesEqual(note, leadingNote);
 
-                // Show markers for chord tones, scale notes, or leading notes
-                if (isChordTone || isScaleNote || isLeadingNote) {
+                // Show markers for chord tones, scale notes (if enabled), or leading notes (if enabled)
+                const shouldShowScaleNote = showScaleNotes && isScaleNote && !isChordTone;
+                if (isChordTone || shouldShowScaleNote || isLeadingNote) {
                     const marker = document.createElement('div');
                     marker.className = 'fret-marker';
 
                     // Determine what to display
-                    let displayText;
                     if (isRoot) {
-                        displayText = 'R';
-                    } else if (isLeadingNote && isChordTone) {
-                        displayText = MusicTheory.getChordIntervalLabel(rootNote, note, chordType);
-                    } else if (isLeadingNote && !isChordTone) {
-                        displayText = 'L';
+                        const noteName = note.replace('#', '<sup>♯</sup>');
+                        marker.innerHTML = `${noteName}<sub>R</sub>`;
+                    } else if (isLeadingNote) {
+                        marker.textContent = 'L';
                     } else if (isChordTone) {
-                        displayText = MusicTheory.getChordIntervalLabel(rootNote, note, chordType);
+                        const interval = MusicTheory.getChordIntervalLabel(rootNote, note, chordType);
+                        const noteName = note.replace('#', '<sup>♯</sup>');
+                        marker.innerHTML = `${noteName}<sub>${interval}</sub>`;
                     } else if (isScaleNote) {
-                        displayText = MusicTheory.getScaleDegreeLabel(rootNote, note, scaleType);
+                        const degree = MusicTheory.getScaleDegreeLabel(rootNote, note, scaleType);
+                        const noteName = note.replace('#', '<sup>♯</sup>');
+                        marker.innerHTML = `${noteName}<sub>${degree}</sub>`;
                     }
 
-                    marker.textContent = displayText;
-
-                    // Apply styling - priority: Root > Leading+Chord > Leading Note > Chord Tone > Scale Note
+                    // Apply styling - priority: Root > Leading Note > Chord Tone > Scale Note
                     if (isRoot) {
                         marker.classList.add('root');
                         if (isChordTone) {
                             marker.classList.add('chord-tone');
                         }
-                    } else if (isLeadingNote && isChordTone) {
-                        marker.classList.add('leading-chord-tone');
-                    } else if (isLeadingNote && !isChordTone) {
+                    } else if (isLeadingNote) {
+                        // All leading notes use triangle, regardless of whether they're chord tones
                         marker.classList.add('leading-note');
                     } else if (isChordTone) {
                         marker.classList.add('chord-tone');
@@ -163,8 +163,8 @@ const Fretboard = {
     /**
      * Render a complete fretboard (create + update)
      */
-    renderFretboard(containerId, rootNote, chordType, scaleType, nextChordRoot = null) {
+    renderFretboard(containerId, rootNote, chordType, scaleType, nextChordRoot = null, showLeadingNotes = false, showScaleNotes = true) {
         this.createFretboard(containerId);
-        this.updateFretboard(containerId, rootNote, chordType, scaleType, nextChordRoot);
+        this.updateFretboard(containerId, rootNote, chordType, scaleType, nextChordRoot, showLeadingNotes, showScaleNotes);
     }
 };
