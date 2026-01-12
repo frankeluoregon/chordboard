@@ -4,7 +4,8 @@
   "description": "An interactive fretboard visualization tool for guitar and bass, featuring chord progressions with 7th chords and intelligent leading note detection",
   "main": "index.html",
   "scripts": {
-    "start": "npx http-server -p 8080 -o"
+    "start": "npx http-server -p 8080 -o",
+    "build": "echo 'Static site - no build needed'"
   },
   "keywords": [
     "guitar",
