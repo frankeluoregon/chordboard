@@ -12,7 +12,9 @@
       "Bash(git push:*)",
       "Bash(git remote:*)",
       "Bash(git pull:*)",
-      "Bash(git stash:*)"
+      "Bash(git stash:*)",
+      "Bash(gh repo rename:*)",
+      "Bash(gh run:*)"
     ]
   }
 }
