@@ -67,6 +67,12 @@ body:has(.top-bar.mobile-static) {
     white-space: nowrap;
 }
 
+
+#fretboard-page,
+#progression-page {
+    padding-top: 130px;
+}
+
 .mode-toggle {
     display: flex;
     gap: 5px;
