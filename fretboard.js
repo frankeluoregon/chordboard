@@ -2,7 +2,8 @@
 const Fretboard = {
     // Tuning configurations
     tunings: {
-        bass: ['G', 'D', 'A', 'E'],      // 4-string bass
+        bass4: ['G', 'D', 'A', 'E'],         // 4-string bass
+        bass5: ['G', 'D', 'A', 'E', 'B'],    // 5-string bass (high to low)
         guitar: ['E', 'B', 'G', 'D', 'A', 'E']  // 6-string guitar (high to low)
     },
     currentInstrument: 'guitar',
