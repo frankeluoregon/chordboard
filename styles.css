@@ -1374,6 +1374,7 @@ input[type="checkbox"] {
     .chord-controls .input-group label {
         font-size: 0.8em;
         margin-bottom: 2px;
+        display: none;
     }
 
     .chord-controls .input-group select {
