@@ -548,10 +548,11 @@ const App = {
         const controls = document.createElement('div');
         controls.className = 'chord-controls';
 
-        // Chord number label (for desktop)
+        // Chord name label
         const label = document.createElement('div');
         label.className = 'chord-label';
-        label.textContent = `Chord ${index + 1}`;
+        label.id = `chord-label-${index}`;
+        label.textContent = this.formatChordName(this.chords[index]);
         controls.appendChild(label);
 
         // Root note letter selector
@@ -575,6 +576,7 @@ const App = {
             (e) => {
                 const accidental = document.getElementById(`root-accidental-${index}`).value;
                 this.chords[index].root = e.target.value + accidental;
+                this.updateChordLabel(index);
                 this.updateFretboard(index);
             }
         );
@@ -593,6 +595,7 @@ const App = {
             (e) => {
                 const letter = document.getElementById(`root-letter-${index}`).value;
                 this.chords[index].root = letter + e.target.value;
+                this.updateChordLabel(index);
                 this.updateFretboard(index);
             }
         );
@@ -615,6 +618,7 @@ const App = {
             this.chords[index].type,
             (e) => {
                 this.chords[index].type = e.target.value;
+                this.updateChordLabel(index);
                 this.updateModeOptions(index);
                 this.updateFretboard(index);
             }
@@ -723,14 +727,9 @@ const App = {
         arpeggioBtn.textContent = '🎼 Arpeggio';
         arpeggioBtn.dataset.playbackMode = 'arpeggio';
 
-        const stopBtn = document.createElement('button');
-        stopBtn.className = 'stop-button';
-        stopBtn.textContent = '⏹ Stop';
-
         flyout.appendChild(harmonyBtn);
         flyout.appendChild(strumBtn);
         flyout.appendChild(arpeggioBtn);
-        flyout.appendChild(stopBtn);
 
         container.appendChild(playButton);
         container.appendChild(flyout);
@@ -754,13 +753,6 @@ const App = {
                 this.playChord(chord, playbackMode);
                 flyout.style.display = 'none';
             });
-        });
-
-        // Stop button handler
-        stopBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            MIDIPlayer.stopAll();
-            flyout.style.display = 'none';
         });
 
         return container;
@@ -840,6 +832,10 @@ const App = {
     updateFretboard(index) {
         const chord = this.chords[index];
         const containerId = `fretboard-${index}`;
+        const container = document.getElementById(containerId);
+
+        // Check if playback controls already exist and save reference
+        const existingPlayback = container.querySelector('.playback-container');
 
         Fretboard.renderFretboard(
             containerId,
@@ -850,6 +846,15 @@ const App = {
             false, // showLeadingNotes (not used in chord select)
             this.showScaleNotes  // Use toggle value
         );
+
+        // Re-add playback controls if they existed
+        if (existingPlayback) {
+            container.appendChild(existingPlayback);
+        } else {
+            // If no existing controls, create them
+            const playbackContainer = this.createPlaybackControls(index, 'fretboard');
+            container.appendChild(playbackContainer);
+        }
     },
 
     /**
@@ -887,6 +892,30 @@ const App = {
             lydianAugmented: 'Lydian Augmented'
         };
         return names[mode] || mode;
+    },
+
+    /**
+     * Format chord name with accidentals (e.g., "C# Maj7", "B♭ Minor")
+     */
+    formatChordName(chord) {
+        // Format root note with proper accidental symbols
+        let rootDisplay = chord.root.replace('#', '♯').replace('b', '♭');
+
+        // Get type name
+        const typeName = this.getChordTypeName(chord.type);
+
+        return `${rootDisplay} ${typeName}`;
+    },
+
+    /**
+     * Update chord label display
+     */
+    updateChordLabel(index) {
+        const label = document.getElementById(`chord-label-${index}`);
+        if (label) {
+            const chord = this.chords[index];
+            label.textContent = this.formatChordName(chord);
+        }
     },
 
     /**

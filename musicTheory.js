@@ -27,8 +27,8 @@ const MusicTheory = {
             { value: 'mixolydian', label: 'Mixolydian' }
         ],
         minor: [
-            { value: 'dorian', label: 'Dorian' },
             { value: 'aeolian', label: 'Aeolian' },
+            { value: 'dorian', label: 'Dorian' },
             { value: 'phrygian', label: 'Phrygian' }
         ],
         dominant7: [
@@ -41,13 +41,13 @@ const MusicTheory = {
             { value: 'lydian', label: 'Lydian' }
         ],
         minor7: [
-            { value: 'dorian', label: 'Dorian' },
             { value: 'aeolian', label: 'Aeolian' },
+            { value: 'dorian', label: 'Dorian' },
             { value: 'phrygian', label: 'Phrygian' }
         ],
         diminished: [
-            { value: 'locrian', label: 'Locrian' },
-            { value: 'wholeHalfDiminished', label: 'Whole-Half Diminished' }
+            { value: 'wholeHalfDiminished', label: 'Whole-Half Diminished' },
+            { value: 'locrian', label: 'Locrian' }
         ],
         augmented: [
             { value: 'wholeTone', label: 'Whole Tone' },

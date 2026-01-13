@@ -104,6 +104,13 @@
                         </label>
                     </div>
 
+                    <div class="input-group" id="show-leading-notes-group" style="display: none;">
+                        <label>
+                            <input type="checkbox" id="show-leading-notes" checked>
+                            Leading Notes
+                        </label>
+                    </div>
+
                     <div class="input-group" id="num-chords-group">
                         <label for="num-chords">Chords:</label>
                         <select id="num-chords">
@@ -157,13 +164,6 @@
                             <option value="minor">Minor</option>
                         </select>
                     </div>
-
-                    <div class="input-group" id="show-leading-notes-group" style="display: none;">
-                        <label>
-                            <input type="checkbox" id="show-leading-notes" checked>
-                            Leading Notes
-                        </label>
-                    </div>
                 </div>
 
                 <!-- Progression Selector Row (separate row below) -->
@@ -198,7 +198,6 @@
                             <button class="playback-mode-btn" data-mode="harmony">🎵 Harmony</button>
                             <button class="playback-mode-btn" data-mode="strum">🎸 Strum</button>
                             <button class="playback-mode-btn" data-mode="arpeggio">🎼 Arpeggio</button>
-                            <button class="stop-button" id="progression-stop-btn">⏹ Stop</button>
                         </div>
                     </div>
                 </div>

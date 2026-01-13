@@ -1413,4 +1413,11 @@ input[type="checkbox"] {
         page-break-inside: avoid;
         break-inside: avoid;
     }
+
+    /* Limit fret options to 12 on mobile */
+    #num-frets option[value="15"],
+    #num-frets option[value="17"],
+    #num-frets option[value="20"] {
+        display: none;
+    }
 }

@@ -20,7 +20,8 @@
       "Bash(npx wrangler pages deploy . --project-name=fretforge)",
       "Bash(git checkout:*)",
       "Bash(python -m http.server:*)",
-      "Bash(node -c:*)"
+      "Bash(node -c:*)",
+      "Bash(git rebase:*)"
     ]
   }
 }
