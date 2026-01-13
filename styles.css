@@ -1094,6 +1094,26 @@ input[type="checkbox"] {
 @media (max-width: 768px) and (orientation: landscape) {
     .fret-cell {
         height: clamp(35px, 6vh, 45px);
+        border-right: 2px solid #8B7355; /* Thinner borders for tighter spacing */
+    }
+
+    /* Ensure string lines are continuous */
+    .fret-cell::before {
+        height: 2px;
+        background: rgba(255, 228, 181, 0.3);
+        top: 50%;
+        transform: translateY(-50%);
+        left: 0;
+        right: 0;
+    }
+
+    .fret-cell:first-of-type {
+        border-left: 4px solid #8B7355;
+    }
+
+    .fret-cell.fret-0 {
+        border-left: 4px solid #8B7355;
+        border-right: 2px solid #8B7355;
     }
 
     .fret-marker {
@@ -1114,6 +1134,7 @@ input[type="checkbox"] {
 
     .fretboard-grid {
         padding: 8px;
+        gap: 0; /* Ensure no gaps between cells */
     }
 }
 
@@ -1236,10 +1257,9 @@ input[type="checkbox"] {
         display: none;
     }
 
-    /* Hide zoom controls on mobile - frets are auto-managed */
-    .input-group:has(#zoom-slider),
-    #zoom-slider,
-    #zoom-value {
+    /* Hide frets selector on mobile - auto-managed by orientation */
+    .input-group:has(#num-frets),
+    #num-frets {
         display: none !important;
     }
 }
