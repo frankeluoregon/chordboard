@@ -1242,14 +1242,73 @@ input[type="checkbox"] {
         padding: 12px;
     }
 
-    /* Responsive chord controls */
+    /* Responsive chord controls - two neat rows */
     .chord-controls {
         gap: 8px;
+        flex-wrap: wrap;
     }
 
+    /* Chord label takes full width on first row */
+    .chord-controls .chord-label {
+        flex: 1 1 100%;
+        order: -1;
+        font-size: 1.1em;
+        padding: 4px 0;
+        margin-bottom: 4px;
+    }
+
+    /* Second row: Root, Accidental, Type, Mode */
     .chord-controls .input-group {
-        flex: 1 1 calc(50% - 4px);
-        min-width: 120px;
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    /* Root selector slightly wider */
+    .chord-controls .input-group:has(#root-letter-0),
+    .chord-controls .input-group:has(#root-letter-1),
+    .chord-controls .input-group:has(#root-letter-2),
+    .chord-controls .input-group:has(#root-letter-3),
+    .chord-controls .input-group:has(#root-letter-4),
+    .chord-controls .input-group:has(#root-letter-5),
+    .chord-controls .input-group:has(#root-letter-6),
+    .chord-controls .input-group:has(#root-letter-7) {
+        flex: 0 1 25%;
+    }
+
+    /* Accidental selector compact */
+    .chord-controls .compact-group {
+        flex: 0 1 15%;
+    }
+
+    /* Type and Mode selectors share remaining space */
+    .chord-controls .input-group:has(#chord-type-0),
+    .chord-controls .input-group:has(#chord-type-1),
+    .chord-controls .input-group:has(#chord-type-2),
+    .chord-controls .input-group:has(#chord-type-3),
+    .chord-controls .input-group:has(#chord-type-4),
+    .chord-controls .input-group:has(#chord-type-5),
+    .chord-controls .input-group:has(#chord-type-6),
+    .chord-controls .input-group:has(#chord-type-7),
+    .chord-controls .input-group:has(#mode-type-0),
+    .chord-controls .input-group:has(#mode-type-1),
+    .chord-controls .input-group:has(#mode-type-2),
+    .chord-controls .input-group:has(#mode-type-3),
+    .chord-controls .input-group:has(#mode-type-4),
+    .chord-controls .input-group:has(#mode-type-5),
+    .chord-controls .input-group:has(#mode-type-6),
+    .chord-controls .input-group:has(#mode-type-7) {
+        flex: 1 1 30%;
+    }
+
+    /* Ensure labels and selects are compact */
+    .chord-controls .input-group label {
+        font-size: 0.8em;
+        margin-bottom: 2px;
+    }
+
+    .chord-controls .input-group select {
+        font-size: 14px;
+        padding: 8px 6px;
     }
 
     /* Hide legend on very small screens */
