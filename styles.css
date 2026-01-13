@@ -199,18 +199,31 @@ body:has(.top-bar.mobile-static) .page-content {
     min-width: 80px;
 }
 
-#chord-select-scale-toggle label {
+#chord-select-scale-toggle label,
+#show-leading-notes-group label {
     display: flex;
     align-items: center;
     gap: 6px;
     cursor: pointer;
+    color: #f4a460;
 }
 
-#chord-select-scale-toggle input[type="checkbox"] {
+#chord-select-scale-toggle input[type="checkbox"],
+#show-leading-notes-group input[type="checkbox"] {
     width: 16px;
     height: 16px;
+    min-width: 16px;
+    min-height: 16px;
     cursor: pointer;
     accent-color: #8d5524;
+}
+
+#chord-select-scale-toggle,
+#show-leading-notes-group {
+    background: rgba(141, 85, 36, 0.15);
+    border: 1px solid rgba(141, 85, 36, 0.3);
+    border-radius: 6px;
+    padding: 8px 12px;
 }
 
 #zoom-slider {
@@ -714,8 +727,10 @@ body:has(#fretboard-page.active) .legend .leading-note-legend {
 }
 
 .progression-toggles input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
+    width: 16px;
+    height: 16px;
+    min-width: 16px;
+    min-height: 16px;
     cursor: pointer;
     accent-color: #8d5524;
 }
@@ -999,10 +1014,14 @@ button,
 .playback-button,
 .mode-btn,
 .playback-mode-btn,
-select,
-input[type="checkbox"] {
+select {
     min-height: 44px;
     min-width: 44px;
+    cursor: pointer;
+}
+
+/* Checkboxes should be smaller for usability */
+input[type="checkbox"] {
     cursor: pointer;
 }
 
@@ -1240,6 +1259,20 @@ input[type="checkbox"] {
 
     .chord-section {
         padding: 12px;
+        display: block;
+        visibility: visible;
+    }
+
+    /* Ensure fretboards are visible */
+    .fretboard-container {
+        display: block !important;
+        visibility: visible !important;
+        min-height: 200px;
+    }
+
+    .fretboard-grid {
+        display: grid !important;
+        visibility: visible !important;
     }
 
     /* Responsive chord controls - two neat rows */
