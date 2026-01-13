@@ -140,6 +140,37 @@ const MIDIPlayer = {
 
             this.isInitialized = true;
             console.log('All samplers initialized');
+
+            // Wait for all samplers to load their samples
+            const loadPromises = Object.values(this.samplers).map(sampler => {
+                return new Promise((resolve) => {
+                    // Check if already loaded
+                    if (sampler.loaded) {
+                        console.log('Sampler already loaded');
+                        resolve();
+                        return;
+                    }
+
+                    // Wait for load event
+                    const checkLoaded = setInterval(() => {
+                        if (sampler.loaded) {
+                            console.log('Sampler loaded');
+                            clearInterval(checkLoaded);
+                            resolve();
+                        }
+                    }, 100);
+
+                    // Timeout after 10 seconds
+                    setTimeout(() => {
+                        clearInterval(checkLoaded);
+                        console.warn('Sampler load timeout');
+                        resolve();
+                    }, 10000);
+                });
+            });
+
+            await Promise.all(loadPromises);
+            console.log('All samples loaded and ready');
         } catch (error) {
             console.error('Error initializing samplers:', error);
             // Fallback to simple synthesis if samplers fail to load
