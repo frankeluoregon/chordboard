@@ -1263,7 +1263,7 @@ input[type="checkbox"] {
         min-width: 0;
     }
 
-    /* Root selector slightly wider */
+    /* Root selector */
     .chord-controls .input-group:has(#root-letter-0),
     .chord-controls .input-group:has(#root-letter-1),
     .chord-controls .input-group:has(#root-letter-2),
@@ -1272,15 +1272,22 @@ input[type="checkbox"] {
     .chord-controls .input-group:has(#root-letter-5),
     .chord-controls .input-group:has(#root-letter-6),
     .chord-controls .input-group:has(#root-letter-7) {
-        flex: 0 1 25%;
+        flex: 0 1 24%;
+        margin-right: 4px;
     }
 
-    /* Accidental selector compact */
+    /* Accidental selector - narrower and compact */
     .chord-controls .compact-group {
-        flex: 0 1 15%;
+        flex: 0 1 12%;
+        margin-right: 8px;
     }
 
-    /* Type and Mode selectors share remaining space */
+    .chord-controls .compact-group select {
+        padding: 8px 2px;
+        text-align: center;
+    }
+
+    /* Type selector with right margin for spacing */
     .chord-controls .input-group:has(#chord-type-0),
     .chord-controls .input-group:has(#chord-type-1),
     .chord-controls .input-group:has(#chord-type-2),
@@ -1288,7 +1295,12 @@ input[type="checkbox"] {
     .chord-controls .input-group:has(#chord-type-4),
     .chord-controls .input-group:has(#chord-type-5),
     .chord-controls .input-group:has(#chord-type-6),
-    .chord-controls .input-group:has(#chord-type-7),
+    .chord-controls .input-group:has(#chord-type-7) {
+        flex: 1 1 26%;
+        margin-right: 4px;
+    }
+
+    /* Mode selector */
     .chord-controls .input-group:has(#mode-type-0),
     .chord-controls .input-group:has(#mode-type-1),
     .chord-controls .input-group:has(#mode-type-2),
@@ -1297,7 +1309,7 @@ input[type="checkbox"] {
     .chord-controls .input-group:has(#mode-type-5),
     .chord-controls .input-group:has(#mode-type-6),
     .chord-controls .input-group:has(#mode-type-7) {
-        flex: 1 1 30%;
+        flex: 1 1 26%;
     }
 
     /* Ensure labels and selects are compact */
