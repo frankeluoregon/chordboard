@@ -29,11 +29,53 @@ const App = {
         // Set initial padding based on menu bar height
         this.updatePadding();
 
+        // Setup responsive fret limiting
+        this.setupResponsiveFrets();
+
         // Update padding on window resize
         window.addEventListener('resize', () => this.updatePadding());
 
         // Render the initial mode
         this.renderFretboards();
+    },
+
+    /**
+     * Setup responsive fret limiting based on viewport
+     */
+    setupResponsiveFrets() {
+        const handleViewportChange = () => {
+            // Only apply on smaller screens (mobile/tablet)
+            if (window.innerWidth <= 768) {
+                const isPortrait = window.innerHeight > window.innerWidth;
+                const numFretsSelect = document.getElementById('num-frets');
+
+                if (isPortrait) {
+                    // Portrait: limit to 5 frets
+                    Fretboard.numFrets = 5;
+                    if (numFretsSelect) numFretsSelect.value = '5';
+                } else {
+                    // Landscape: allow up to 12 frets, default to 12
+                    Fretboard.numFrets = 12;
+                    if (numFretsSelect) numFretsSelect.value = '12';
+                }
+
+                // Re-render if already initialized
+                if (this.chords && this.chords.length > 0) {
+                    if (this.currentMode === 'fretboard') {
+                        this.renderFretboards();
+                    } else {
+                        this.renderProgressionDisplay();
+                    }
+                }
+            }
+        };
+
+        // Initial setup with slight delay to ensure DOM is ready
+        setTimeout(() => handleViewportChange(), 100);
+
+        // Listen for orientation and resize changes
+        window.addEventListener('orientationchange', handleViewportChange);
+        window.addEventListener('resize', handleViewportChange);
     },
 
 

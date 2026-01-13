@@ -1059,6 +1059,62 @@ input[type="checkbox"] {
         font-size: clamp(0.85em, 2vw, 1.1em);
         padding: clamp(5px, 1.5vw, 10px);
     }
+
+    /* Keep fretboard within viewport bounds */
+    .fretboard-container {
+        padding: 10px;
+        padding-bottom: 40px;
+    }
+
+    .fretboard-grid {
+        min-width: auto !important;
+        width: 100%;
+        padding: 10px;
+    }
+}
+
+/* Portrait mode on mobile - optimize for 5 frets */
+@media (max-width: 768px) and (orientation: portrait) {
+    .fret-cell {
+        height: clamp(50px, 10vw, 70px);
+    }
+
+    .fret-marker {
+        width: clamp(35px, 7vw, 45px);
+        height: clamp(35px, 7vw, 45px);
+        font-size: clamp(0.75em, 1.8vw, 0.9em);
+    }
+
+    .string-label {
+        font-size: clamp(0.9em, 2.2vw, 1.15em);
+    }
+}
+
+/* Landscape mode on mobile - optimize for 12 frets */
+@media (max-width: 768px) and (orientation: landscape) {
+    .fret-cell {
+        height: clamp(35px, 6vh, 45px);
+    }
+
+    .fret-marker {
+        width: clamp(28px, 5vh, 35px);
+        height: clamp(28px, 5vh, 35px);
+        font-size: clamp(0.65em, 1.2vw, 0.8em);
+    }
+
+    .string-label {
+        font-size: clamp(0.8em, 1.5vw, 1em);
+        padding: clamp(4px, 1vw, 8px);
+    }
+
+    .fretboard-container {
+        padding: 8px;
+        padding-bottom: 35px;
+    }
+
+    .fretboard-grid {
+        padding: 8px;
+    }
 }
 
 /* Small Screen Optimizations */
