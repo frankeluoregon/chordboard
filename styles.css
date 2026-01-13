@@ -1006,13 +1006,14 @@ body:has(#fretboard-page.active) .legend .leading-note-legend {
     }
 
     .page-content {
-        padding: 0 20px;
+        padding: 0 15px;
     }
 
     .top-bar-content {
         flex-direction: column;
         align-items: stretch;
         gap: 15px;
+        padding: 12px 15px;
     }
 
     .top-bar h1 {
@@ -1022,6 +1023,37 @@ body:has(#fretboard-page.active) .legend .leading-note-legend {
 
     .mode-toggle {
         justify-content: center;
+    }
+
+    /* Larger tap targets for mobile */
+    .mode-btn {
+        min-height: 44px;
+        padding: 12px 24px;
+        font-size: 1em;
+    }
+
+    /* Better button sizes */
+    button, .export-btn, .playback-button {
+        min-height: 44px;
+        padding: 10px 18px;
+        font-size: 16px; /* Prevent iOS zoom */
+    }
+
+    /* Better select sizes */
+    select, .input-group select {
+        min-height: 44px;
+        padding: 10px 14px;
+        font-size: 16px; /* Prevent iOS zoom */
+    }
+
+    /* Better input spacing */
+    .input-group {
+        justify-content: space-between;
+        margin-bottom: 12px;
+    }
+
+    .input-group label {
+        font-size: 0.9em;
     }
 
     .legend {
@@ -1039,10 +1071,6 @@ body:has(#fretboard-page.active) .legend .leading-note-legend {
         gap: 10px;
     }
 
-    .input-group {
-        justify-content: space-between;
-    }
-
     .fretboard-container {
         padding: 10px;
         padding-bottom: 50px;
@@ -1050,9 +1078,107 @@ body:has(#fretboard-page.active) .legend .leading-note-legend {
 
     .chord-controls {
         flex-direction: column;
+        gap: 12px;
+    }
+
+    .chord-section {
+        padding: 15px;
+        margin-bottom: 20px;
     }
 
     .progression-list {
         grid-template-columns: 1fr;
+    }
+
+    /* Larger fret markers on mobile */
+    .fret-marker {
+        width: 50px;
+        height: 50px;
+        font-size: 1em;
+    }
+
+    .fret-marker .note-name {
+        font-size: 1.1em;
+    }
+
+    .fret-marker .interval {
+        font-size: 0.8em;
+    }
+
+    /* Better playback controls on mobile */
+    .playback-container {
+        margin-top: 10px;
+    }
+
+    .playback-flyout {
+        min-width: 240px;
+        padding: 12px;
+    }
+
+    .playback-mode-btn {
+        min-height: 48px;
+        padding: 12px 16px;
+        font-size: 16px;
+    }
+
+    /* Better progression selector on mobile */
+    .progression-select-row select {
+        font-size: 16px;
+        padding: 10px 14px;
+        min-width: auto;
+        width: 100%;
+    }
+
+    .progression-select-row {
+        padding: 12px 15px;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    /* Zoom slider touch target */
+    #zoom-slider {
+        width: 120px;
+        height: 8px;
+    }
+
+    #zoom-slider::-webkit-slider-thumb {
+        width: 20px;
+        height: 20px;
+    }
+
+    #zoom-slider::-moz-range-thumb {
+        width: 20px;
+        height: 20px;
+    }
+}
+
+/* Portrait mode specific adjustments */
+body.mobile-device.portrait-mode {
+    /* Additional portrait-specific styles */
+}
+
+body.mobile-device.portrait-mode .fretboard-grid {
+    min-width: auto; /* Allow fretboard to fit in portrait */
+}
+
+body.mobile-device.portrait-mode .fret-marker {
+    width: 55px; /* Even larger in portrait for fewer frets */
+    height: 55px;
+}
+
+/* Landscape mode specific adjustments */
+body.mobile-device.landscape-mode .top-bar-content {
+    padding: 8px 15px; /* Compact toolbar in landscape */
+}
+
+body.mobile-device.landscape-mode .top-bar h1 {
+    font-size: 1.3em;
+}
+
+/* Better touch feedback */
+@media (hover: none) and (pointer: coarse) {
+    button:active, .mode-btn:active, .playback-mode-btn:active {
+        transform: scale(0.95);
+        transition: transform 0.1s;
     }
 }

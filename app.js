@@ -20,7 +20,9 @@ const App = {
         // Detect mobile and adjust toolbar positioning
         if (this.isMobile()) {
             document.querySelector('.top-bar').classList.add('mobile-static');
+            document.body.classList.add('mobile-device');
             this.setupMobileScrollBehavior();
+            this.setupOrientationDetection();
         }
 
         // Initialize chord progression with defaults
@@ -73,6 +75,44 @@ const App = {
                 }
             }, 10);
         }, { passive: true });
+    },
+
+    /**
+     * Setup orientation detection for mobile devices
+     */
+    setupOrientationDetection() {
+        const handleOrientationChange = () => {
+            const isPortrait = window.innerHeight > window.innerWidth;
+            const numFretsSelect = document.getElementById('num-frets');
+
+            if (isPortrait) {
+                // Portrait mode: limit to 5 frets for better visibility
+                Fretboard.numFrets = 5;
+                numFretsSelect.value = '5';
+                document.body.classList.add('portrait-mode');
+                document.body.classList.remove('landscape-mode');
+            } else {
+                // Landscape mode: use 12 frets
+                Fretboard.numFrets = 12;
+                numFretsSelect.value = '12';
+                document.body.classList.add('landscape-mode');
+                document.body.classList.remove('portrait-mode');
+            }
+
+            // Re-render fretboards with new fret count
+            if (this.currentMode === 'fretboard') {
+                this.renderFretboards();
+            } else {
+                this.renderProgressionDisplay();
+            }
+        };
+
+        // Initial orientation setup
+        handleOrientationChange();
+
+        // Listen for orientation changes
+        window.addEventListener('orientationchange', handleOrientationChange);
+        window.addEventListener('resize', handleOrientationChange);
     },
 
     /**
