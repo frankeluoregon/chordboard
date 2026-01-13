@@ -1007,6 +1007,12 @@ body:has(#fretboard-page.active) .legend .leading-note-legend {
 
     .page-content {
         padding: 0 15px;
+        padding-top: var(--topbar-offset) !important;
+        min-height: 100vh;
+    }
+
+    #fretboard-container, #progression-display {
+        margin-top: 20px;
     }
 
     .top-bar-content {
@@ -1056,6 +1062,17 @@ body:has(#fretboard-page.active) .legend .leading-note-legend {
         font-size: 0.9em;
     }
 
+    .top-bar-row.bottom-row {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .bottom-left-controls {
+        flex-direction: column;
+        width: 100%;
+        gap: 12px;
+    }
+
     .legend {
         flex-wrap: wrap;
         justify-content: center;
@@ -1069,6 +1086,12 @@ body:has(#fretboard-page.active) .legend .leading-note-legend {
     .top-controls {
         flex-direction: column;
         gap: 10px;
+    }
+
+    .top-row-controls {
+        flex-direction: column;
+        width: 100%;
+        gap: 12px;
     }
 
     .fretboard-container {
@@ -1092,6 +1115,11 @@ body:has(#fretboard-page.active) .legend .leading-note-legend {
     .chord-section {
         padding: 15px;
         margin-bottom: 20px;
+    }
+
+    .chord-label {
+        font-size: 1.1em;
+        margin-bottom: 10px;
     }
 
     .progression-list {

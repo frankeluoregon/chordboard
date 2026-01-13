@@ -71,6 +71,11 @@ const App = {
             const isPortrait = window.innerHeight > window.innerWidth;
             const numFretsSelect = document.getElementById('num-frets');
 
+            if (!numFretsSelect) {
+                console.warn('num-frets select not found, skipping orientation change');
+                return;
+            }
+
             if (isPortrait) {
                 // Portrait mode: lock to 5 frets, disable selector
                 Fretboard.numFrets = 5;
@@ -94,16 +99,20 @@ const App = {
                 document.body.classList.remove('portrait-mode');
             }
 
-            // Re-render fretboards with new fret count
-            if (this.currentMode === 'fretboard') {
-                this.renderFretboards();
-            } else {
-                this.renderProgressionDisplay();
+            // Re-render fretboards with new fret count only if already initialized
+            if (this.chords && this.chords.length > 0) {
+                if (this.currentMode === 'fretboard') {
+                    this.renderFretboards();
+                } else {
+                    this.renderProgressionDisplay();
+                }
             }
         };
 
-        // Initial orientation setup
-        handleOrientationChange();
+        // Initial orientation setup - delayed to ensure DOM is ready
+        setTimeout(() => {
+            handleOrientationChange();
+        }, 100);
 
         // Listen for orientation changes
         window.addEventListener('orientationchange', handleOrientationChange);
