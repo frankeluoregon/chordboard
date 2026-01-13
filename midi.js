@@ -329,7 +329,7 @@ const MIDIPlayer = {
             bass4: [2, 2, 1, 1],         // G2, D2, A1, E1
             bass5: [2, 2, 1, 1, 0],      // G2, D2, A1, E1, B0
             bass6: [3, 2, 2, 1, 1, 0],   // C3, G2, D2, A1, E1, B0
-            ukulele: [5, 5, 5, 5],       // A5, E5, C5, G5 (High G)
+            ukulele: [4, 4, 4, 4],       // A4, E4, C4, G4 (High G)
             mandolin: [5, 5, 4, 4, 4, 4, 3, 3], // E5, E5, A4, A4, D4, D4, G3, G3
             banjo: [4, 3, 3, 3, 4]       // D4, B3, G3, D3, G4 (High G 5th string)
         };
