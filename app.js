@@ -17,14 +17,6 @@ const App = {
      * Initialize the application
      */
     init() {
-        // Detect mobile and adjust toolbar positioning
-        if (this.isMobile()) {
-            document.querySelector('.top-bar').classList.add('mobile-static');
-            document.body.classList.add('mobile-device');
-            this.setupMobileScrollBehavior();
-            this.setupOrientationDetection();
-        }
-
         // Initialize chord progression with defaults
         this.initializeChords();
 
@@ -44,79 +36,6 @@ const App = {
         this.renderFretboards();
     },
 
-    /**
-     * Setup mobile scroll behavior - keep toolbar visible
-     * Only add subtle shadow when scrolling for visual feedback
-     */
-    setupMobileScrollBehavior() {
-        const topBar = document.querySelector('.top-bar');
-
-        window.addEventListener('scroll', () => {
-            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-
-            // Add shadow when scrolled, remove when at top
-            if (scrollTop > 10) {
-                topBar.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.8)';
-            } else {
-                topBar.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.5)';
-            }
-        }, { passive: true });
-    },
-
-    /**
-     * Setup orientation detection for mobile devices
-     */
-    setupOrientationDetection() {
-        const handleOrientationChange = () => {
-            const isPortrait = window.innerHeight > window.innerWidth;
-            const numFretsSelect = document.getElementById('num-frets');
-
-            if (isPortrait) {
-                // Portrait mode: lock to 5 frets, disable selector
-                Fretboard.numFrets = 5;
-                numFretsSelect.value = '5';
-                numFretsSelect.disabled = true;
-                numFretsSelect.style.opacity = '0.6';
-                numFretsSelect.style.cursor = 'not-allowed';
-                document.body.classList.add('portrait-mode');
-                document.body.classList.remove('landscape-mode');
-            } else {
-                // Landscape mode: default to 5 frets, allow up to 12
-                // Only reset if currently at portrait-locked value
-                if (Fretboard.numFrets === 5 && numFretsSelect.value === '5') {
-                    Fretboard.numFrets = 5;
-                    numFretsSelect.value = '5';
-                }
-                numFretsSelect.disabled = false;
-                numFretsSelect.style.opacity = '1';
-                numFretsSelect.style.cursor = 'pointer';
-                document.body.classList.add('landscape-mode');
-                document.body.classList.remove('portrait-mode');
-            }
-
-            // Re-render fretboards with new fret count
-            if (this.currentMode === 'fretboard') {
-                this.renderFretboards();
-            } else {
-                this.renderProgressionDisplay();
-            }
-        };
-
-        // Initial orientation setup
-        handleOrientationChange();
-
-        // Listen for orientation changes
-        window.addEventListener('orientationchange', handleOrientationChange);
-        window.addEventListener('resize', handleOrientationChange);
-    },
-
-    /**
-     * Detect if device is mobile
-     */
-    isMobile() {
-        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-            || window.innerWidth <= 768;
-    },
 
     /**
      * Initialize chord objects
@@ -518,7 +437,7 @@ const App = {
         const controls = document.createElement('div');
         controls.className = 'chord-controls';
 
-        // Chord number label
+        // Chord number label (for desktop)
         const label = document.createElement('div');
         label.className = 'chord-label';
         label.textContent = `Chord ${index + 1}`;
