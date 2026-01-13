@@ -117,6 +117,114 @@
     --leading-text: #000000;
 }
 
+/* Muted Orange & Red (Autumn) */
+.theme-autumn {
+    --bg-app: #1a120b;
+    --bg-panel: #2c1e16;
+    --bg-element: #1f1510;
+    --bg-input: #1f1510;
+    --bg-fretboard: linear-gradient(135deg, #3e2723 0%, #281815 100%);
+    --border-dim: #5d4037;
+    --border-bright: #8d6e63;
+    --border-focus: #d84315;
+    --text-main: #d7ccc8;
+    --text-highlight: #ffccbc;
+    --text-accent: #ff7043;
+    --text-inverse: #3e2723;
+    --btn-bg: #bf360c;
+    --btn-hover: #d84315;
+    --btn-text: #ffffff;
+    --btn-border: #872608;
+    --fret-wire: #a1887f;
+    --string-color: rgba(255, 204, 188, 0.3);
+    --nut-bg: #5d4037;
+    --inlay-color: #8d6e63;
+    --root-bg: #bf360c;
+    --root-border: #ff7043;
+    --root-text: #ffffff;
+    --tone-bg: #e65100;
+    --tone-border: #bf360c;
+    --tone-text: #ffffff;
+    --scale-bg: #3e2723;
+    --scale-border: #5d4037;
+    --scale-text: #a1887f;
+    --leading-bg: #5d4037;
+    --leading-border: #8d6e63;
+    --leading-text: #ff7043;
+}
+
+/* Muted Green & Yellow (Meadow) */
+.theme-meadow {
+    --bg-app: #0f1410;
+    --bg-panel: #1b261e;
+    --bg-element: #141f16;
+    --bg-input: #141f16;
+    --bg-fretboard: linear-gradient(135deg, #1b3320 0%, #0f1f12 100%);
+    --border-dim: #2e4d34;
+    --border-bright: #4a7c59;
+    --border-focus: #f9a825;
+    --text-main: #c8e6c9;
+    --text-highlight: #e8f5e9;
+    --text-accent: #f9a825;
+    --text-inverse: #1b3320;
+    --btn-bg: #2e7d32;
+    --btn-hover: #388e3c;
+    --btn-text: #ffffff;
+    --btn-border: #1b5e20;
+    --fret-wire: #81c784;
+    --string-color: rgba(200, 230, 201, 0.3);
+    --nut-bg: #2e4d34;
+    --inlay-color: #66bb6a;
+    --root-bg: #2e7d32;
+    --root-border: #66bb6a;
+    --root-text: #ffffff;
+    --tone-bg: #f9a825;
+    --tone-border: #f57f17;
+    --tone-text: #1b3320;
+    --scale-bg: #1b3320;
+    --scale-border: #2e4d34;
+    --scale-text: #81c784;
+    --leading-bg: #33691e;
+    --leading-border: #558b2f;
+    --leading-text: #dce775;
+}
+
+/* Muted Blue & Purple (Dusk) */
+.theme-dusk {
+    --bg-app: #0a0a12;
+    --bg-panel: #151525;
+    --bg-element: #10101c;
+    --bg-input: #10101c;
+    --bg-fretboard: linear-gradient(135deg, #1a1a3a 0%, #0d0d1f 100%);
+    --border-dim: #2c2c54;
+    --border-bright: #474787;
+    --border-focus: #706fd3;
+    --text-main: #d1d8e0;
+    --text-highlight: #f5f6fa;
+    --text-accent: #a55eea;
+    --text-inverse: #ffffff;
+    --btn-bg: #341f97;
+    --btn-hover: #5f27cd;
+    --btn-text: #ffffff;
+    --btn-border: #221366;
+    --fret-wire: #706fd3;
+    --string-color: rgba(209, 216, 224, 0.3);
+    --nut-bg: #2c2c54;
+    --inlay-color: #706fd3;
+    --root-bg: #341f97;
+    --root-border: #5f27cd;
+    --root-text: #ffffff;
+    --tone-bg: #227093;
+    --tone-border: #34ace0;
+    --tone-text: #ffffff;
+    --scale-bg: #1a1a3a;
+    --scale-border: #2c2c54;
+    --scale-text: #706fd3;
+    --leading-bg: #40407a;
+    --leading-border: #706fd3;
+    --leading-text: #a55eea;
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -1150,7 +1258,7 @@ body:has(#fretboard-page.active) .legend .leading-note-legend {
 .theme-btn {
     padding: 6px 12px;
     background: transparent;
-    color: var(--text-main);
+    color: var(--text-accent);
     border: 1px solid var(--border-dim);
     border-radius: 6px;
     cursor: pointer;
