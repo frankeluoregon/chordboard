@@ -280,28 +280,33 @@ const MIDIPlayer = {
             return notes;
         }
 
-        // Get chord notes from MusicTheory
-        const chordNotes = MusicTheory.getChordNotes(chord.root, chord.type);
+        // Play simple one-octave voicing for unfiltered chords
+        const intervals = MusicTheory.chords[chord.type];
+        if (!intervals) return [];
 
-        // For each string, find the first occurrence of a chord tone
-        tuning.forEach((openNote, stringIndex) => {
-            const baseOctave = baseOctaves[stringIndex];
+        // Find the lowest playable MIDI note on the instrument
+        let minMidi = 127;
+        tuning.forEach((note, index) => {
+            const octave = baseOctaves[index];
+            const midi = this.noteToMidi(note + octave);
+            if (midi < minMidi) minMidi = midi;
+        });
 
-            // Check frets 0-12 for chord tones
-            for (let fret = 0; fret <= 12; fret++) {
-                const note = Fretboard.getNoteAtPosition(stringIndex, fret);
-                const isChordTone = chordNotes.some(chordNote =>
-                    MusicTheory.areNotesEqual(note, chordNote)
-                );
-
-                if (isChordTone) {
-                    // Calculate octave based on fret position
-                    const octave = baseOctave + Math.floor(fret / 12);
-                    const midiNote = this.noteToMidi(note.replace('#', '#') + octave);
-                    notes.push(midiNote);
-                    break; // Move to next string
-                }
+        // Find the lowest Root note >= minMidi
+        let rootMidi = -1;
+        for (let oct = 1; oct <= 8; oct++) {
+            const testMidi = this.noteToMidi(chord.root + oct);
+            if (testMidi >= minMidi) {
+                rootMidi = testMidi;
+                break;
             }
+        }
+        
+        if (rootMidi === -1) rootMidi = this.noteToMidi(chord.root + 4);
+
+        // Generate chord notes
+        intervals.forEach(interval => {
+            notes.push(rootMidi + interval);
         });
 
         return notes;
