@@ -479,7 +479,10 @@ const App = {
                     chord.mode,
                     nextChordRoot,
                     this.showLeadingNotes,  // Use toggle value
-                    this.showScaleNotes     // Use toggle value
+                    this.showScaleNotes,    // Use toggle value
+                    chord.visiblePositions, // Filter set
+                    chord.isFiltering,      // Filter mode active?
+                    (s, f) => this.handleNoteClick(i, s, f) // Click handler
                 );
 
                 // Add playback controls overlay AFTER fretboard is rendered
@@ -487,6 +490,12 @@ const App = {
                 if (fretboardContainer) {
                     const playbackContainer = this.createPlaybackControls(i, 'prog');
                     fretboardContainer.appendChild(playbackContainer);
+                    
+                    // Add filter controls
+                    const filterControls = this.createFilterControls(i);
+                    // Position it top-right
+                    filterControls.style.cssText = "position: absolute; top: 8px; right: 8px; z-index: 100;";
+                    fretboardContainer.appendChild(filterControls);
                 }
             }
         }, 10);
@@ -634,6 +643,10 @@ const App = {
         modeGroup.appendChild(modeSelect);
         controls.appendChild(modeGroup);
 
+        // Add Filter Controls to the main controls area
+        const filterControls = this.createFilterControls(index);
+        controls.appendChild(filterControls);
+
         section.appendChild(controls);
 
         // Create fretboard container
@@ -649,6 +662,144 @@ const App = {
         }, 0);
 
         return section;
+    },
+
+    /**
+     * Create filter controls (Filter / Done / Clear)
+     */
+    createFilterControls(index) {
+        const container = document.createElement('div');
+        container.className = 'filter-controls';
+        
+        const chord = this.chords[index];
+        const isFiltering = chord.isFiltering;
+
+        if (!isFiltering) {
+            const filterBtn = document.createElement('button');
+            filterBtn.className = 'filter-btn';
+            filterBtn.innerHTML = '<span>👁️</span> Filter';
+            filterBtn.title = "Select specific notes to keep";
+            filterBtn.onclick = () => this.toggleFilterMode(index);
+            container.appendChild(filterBtn);
+        } else {
+            const doneBtn = document.createElement('button');
+            doneBtn.className = 'filter-btn active';
+            doneBtn.innerHTML = '<span>✓</span> Done';
+            doneBtn.onclick = () => this.toggleFilterMode(index);
+            
+            const clearBtn = document.createElement('button');
+            clearBtn.className = 'filter-btn secondary';
+            clearBtn.innerHTML = 'Clear';
+            clearBtn.onclick = () => {
+                this.chords[index].visiblePositions = new Set();
+                this.updateFretboard(index);
+            };
+
+            const resetBtn = document.createElement('button');
+            resetBtn.className = 'filter-btn secondary';
+            resetBtn.innerHTML = 'All';
+            resetBtn.onclick = () => {
+                this.chords[index].visiblePositions = null; // Null means "show all"
+                // We need to re-initialize the set with all valid notes for the UI
+                this.initializeFilterSet(index);
+                this.updateFretboard(index);
+            };
+
+            container.appendChild(doneBtn);
+            container.appendChild(resetBtn);
+            container.appendChild(clearBtn);
+        }
+
+        return container;
+    },
+
+    /**
+     * Toggle filter mode for a chord
+     */
+    toggleFilterMode(index) {
+        const chord = this.chords[index];
+        chord.isFiltering = !chord.isFiltering;
+
+        // If entering filter mode and no filter exists, initialize it with ALL currently visible notes
+        if (chord.isFiltering && !chord.visiblePositions) {
+            this.initializeFilterSet(index);
+        }
+
+        // Re-render the specific section to update controls and fretboard
+        if (this.currentMode === 'fretboard') {
+            // In chord select, we can just re-render the whole list or update specific parts.
+            // For simplicity in updating the button state in the DOM, we'll re-render the whole board logic
+            // but we can just call updateFretboard and manually update the button container.
+            // Actually, easiest is to re-render the controls area or just the button.
+            // Let's just re-render the whole list for safety, or better, just update this index.
+            const controlsContainer = document.querySelector(`.chord-section[data-index="${index}"] .chord-controls`);
+            if (controlsContainer) {
+                // Remove old filter controls
+                const oldFilter = controlsContainer.querySelector('.filter-controls');
+                if (oldFilter) oldFilter.remove();
+                // Add new ones
+                controlsContainer.appendChild(this.createFilterControls(index));
+            }
+            this.updateFretboard(index);
+        } else {
+            // In progression mode, re-render the whole display is safest/easiest
+            this.renderProgressionDisplay();
+        }
+    },
+
+    /**
+     * Initialize the filter set with all currently valid notes
+     */
+    initializeFilterSet(index) {
+        const chord = this.chords[index];
+        const visibleSet = new Set();
+        
+        // We need to simulate the logic in Fretboard.updateFretboard to know what's valid
+        // This is a bit redundant but necessary to populate the initial state correctly
+        const chordNotes = MusicTheory.getChordNotes(chord.root, chord.type);
+        const scaleNotes = MusicTheory.getScaleNotes(chord.root, chord.mode);
+        const nextChordRoot = (this.currentMode === 'progression' && index < this.chords.length - 1) ? this.chords[index+1].root : null;
+
+        for (let s = 0; s < Fretboard.tuning.length; s++) {
+            for (let f = 0; f <= Fretboard.numFrets; f++) {
+                const note = Fretboard.getNoteAtPosition(s, f);
+                
+                const isChordTone = chordNotes.some(n => MusicTheory.areNotesEqual(note, n));
+                const isScaleNote = scaleNotes.some(n => MusicTheory.areNotesEqual(note, n));
+                const leadingNote = this.showLeadingNotes && nextChordRoot ? MusicTheory.transposeNote(nextChordRoot, -1) : null;
+                const isLeadingNote = leadingNote && MusicTheory.areNotesEqual(note, leadingNote);
+                
+                const shouldShowScaleNote = this.showScaleNotes && isScaleNote && !isChordTone;
+
+                if (isChordTone || shouldShowScaleNote || isLeadingNote) {
+                    visibleSet.add(`${s}-${f}`);
+                }
+            }
+        }
+        chord.visiblePositions = visibleSet;
+    },
+
+    /**
+     * Handle clicking a note in filter mode
+     */
+    handleNoteClick(index, string, fret) {
+        const chord = this.chords[index];
+        if (!chord.isFiltering) return;
+
+        const posKey = `${string}-${fret}`;
+        
+        // Ensure set exists
+        if (!chord.visiblePositions) {
+            chord.visiblePositions = new Set();
+        }
+
+        if (chord.visiblePositions.has(posKey)) {
+            chord.visiblePositions.delete(posKey);
+        } else {
+            chord.visiblePositions.add(posKey);
+        }
+
+        this.updateFretboard(index);
     },
 
     /**
@@ -835,7 +986,10 @@ const App = {
             chord.mode,
             null,  // nextChordRoot (not used in chord select)
             false, // showLeadingNotes (not used in chord select)
-            this.showScaleNotes  // Use toggle value
+            this.showScaleNotes,  // Use toggle value
+            chord.visiblePositions,
+            chord.isFiltering,
+            (s, f) => this.handleNoteClick(index, s, f)
         );
 
         // Re-add playback controls if they existed
@@ -845,6 +999,13 @@ const App = {
             // If no existing controls, create them
             const playbackContainer = this.createPlaybackControls(index, 'fretboard');
             container.appendChild(playbackContainer);
+        }
+
+        // Re-add filter controls for progression mode (since they are inside the container there)
+        if (this.currentMode === 'progression') {
+             const filterControls = this.createFilterControls(index);
+             filterControls.style.cssText = "position: absolute; top: 8px; right: 8px; z-index: 100;";
+             container.appendChild(filterControls);
         }
     },
 
@@ -975,6 +1136,11 @@ const App = {
         for (let stringIndex = 0; stringIndex < numStrings; stringIndex++) {
             for (let fret = 0; fret <= numFrets; fret++) {
                 const note = Fretboard.getNoteAtPosition(stringIndex, fret);
+                
+                // Check Filter
+                const posKey = `${stringIndex}-${fret}`;
+                if (chord.visiblePositions && !chord.visiblePositions.has(posKey)) continue;
+
                 const isChordTone = chordNotes.some(n => MusicTheory.areNotesEqual(note, n));
                 const isScaleNote = scaleNotes.some(n => MusicTheory.areNotesEqual(note, n));
                 const isRoot = MusicTheory.areNotesEqual(note, chord.root);

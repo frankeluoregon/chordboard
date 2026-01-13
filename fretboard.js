@@ -142,7 +142,7 @@ const Fretboard = {
     /**
      * Update the fretboard with note markers
      */
-    updateFretboard(containerId, rootNote, chordType, scaleType, nextChordRoot = null, showLeadingNotes = false, showScaleNotes = true) {
+    updateFretboard(containerId, rootNote, chordType, scaleType, nextChordRoot = null, showLeadingNotes = false, showScaleNotes = true, visiblePositions = null, isFilterMode = false, onNoteClick = null) {
         const container = document.getElementById(containerId);
         const chordNotes = MusicTheory.getChordNotes(rootNote, chordType);
         const scaleNotes = MusicTheory.getScaleNotes(rootNote, scaleType);
@@ -176,9 +176,20 @@ const Fretboard = {
                 const leadingNote = showLeadingNotes && nextChordRoot ? MusicTheory.transposeNote(nextChordRoot, -1) : null;
                 const isLeadingNote = leadingNote && MusicTheory.areNotesEqual(note, leadingNote);
 
-                // Show markers for chord tones, scale notes (if enabled), or leading notes (if enabled)
+                // Determine if this note is theoretically valid for the current settings
                 const shouldShowScaleNote = showScaleNotes && isScaleNote && !isChordTone;
-                if (isChordTone || shouldShowScaleNote || isLeadingNote) {
+                const isValidNote = isChordTone || shouldShowScaleNote || isLeadingNote;
+
+                if (!isValidNote) continue;
+
+                // Filter Logic:
+                // 1. If in Filter Mode: Show ALL valid notes. Check if they are currently selected in the filter.
+                // 2. If in View Mode (Normal): Only show notes that are in the filter (if a filter exists).
+                const posKey = `${stringIndex}-${fret}`;
+                const isSelected = visiblePositions ? visiblePositions.has(posKey) : true;
+                
+                // Render if we are in filter mode (to show options) OR if the note is selected
+                if (isFilterMode || isSelected) {
                     const marker = document.createElement('div');
                     marker.className = 'fret-marker';
 
@@ -214,6 +225,24 @@ const Fretboard = {
                         marker.classList.add('scale-note');
                     }
 
+                    // Apply Filter Mode specific styling
+                    if (isFilterMode) {
+                        marker.classList.add('interactive');
+                        if (!isSelected) {
+                            marker.classList.add('dimmed');
+                        } else {
+                            marker.classList.add('selected');
+                        }
+                        
+                        // Attach click handler
+                        if (onNoteClick) {
+                            marker.addEventListener('click', (e) => {
+                                e.stopPropagation();
+                                onNoteClick(stringIndex, fret);
+                            });
+                        }
+                    }
+
                     cell.appendChild(marker);
                 }
             }
@@ -223,8 +252,8 @@ const Fretboard = {
     /**
      * Render a complete fretboard (create + update)
      */
-    renderFretboard(containerId, rootNote, chordType, scaleType, nextChordRoot = null, showLeadingNotes = false, showScaleNotes = true) {
+    renderFretboard(containerId, rootNote, chordType, scaleType, nextChordRoot = null, showLeadingNotes = false, showScaleNotes = true, visiblePositions = null, isFilterMode = false, onNoteClick = null) {
         this.createFretboard(containerId);
-        this.updateFretboard(containerId, rootNote, chordType, scaleType, nextChordRoot, showLeadingNotes, showScaleNotes);
+        this.updateFretboard(containerId, rootNote, chordType, scaleType, nextChordRoot, showLeadingNotes, showScaleNotes, visiblePositions, isFilterMode, onNoteClick);
     }
 };

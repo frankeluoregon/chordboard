@@ -414,6 +414,48 @@ body:has(#fretboard-page.active) .legend .leading-note-legend {
     opacity: 1 !important;
 }
 
+/* Filter Controls */
+.filter-controls {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+}
+
+.filter-btn {
+    background: #2a1f1a;
+    color: #c9a887;
+    border: 1px solid #5c2f1f;
+    border-radius: 4px;
+    padding: 4px 10px;
+    font-size: 0.85em;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.2s;
+    min-height: 32px; /* Smaller than main buttons */
+}
+
+.filter-btn:hover {
+    background: #3d2f27;
+    color: #ffe4b5;
+}
+
+.filter-btn.active {
+    background: #8d5524;
+    color: #ffe4b5;
+    border-color: #f4a460;
+}
+
+.filter-btn.secondary {
+    background: transparent;
+    border-color: #3d2f27;
+}
+
+.filter-btn span {
+    font-size: 1.1em;
+}
+
 .chord-section {
     background: #1f1813;
     border-radius: 12px;
@@ -536,6 +578,16 @@ body:has(#fretboard-page.active) .legend .leading-note-legend {
     border: 2px solid transparent;
     position: relative;
     z-index: 1;
+}
+
+.fret-marker.interactive {
+    cursor: pointer;
+}
+
+.fret-marker.dimmed {
+    opacity: 0.2;
+    filter: grayscale(100%);
+    transform: scale(0.8);
 }
 
 .fret-marker:hover {
