@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FretForge Theme Mockups</title>
+    <link rel="stylesheet" href="mockup.css">
+</head>
+<body>
+    <h1>FretForge Color Scheme Options</h1>
+
+    <div class="mockup-grid">
+        <!-- 1. High Contrast -->
+        <div class="theme-container theme-high-contrast">
+            <h2>High Contrast (Accessibility)</h2>
+            <div id="fretboard-hc"></div>
+        </div>
+
+        <!-- 2. Light & Neutral -->
+        <div class="theme-container theme-light">
+            <h2>Light & Neutral (Print Friendly)</h2>
+            <div id="fretboard-light"></div>
+        </div>
+
+        <!-- 3. Green -->
+        <div class="theme-container theme-green">
+            <h2>Forest Green (Monochromatic)</h2>
+            <div id="fretboard-green"></div>
+        </div>
+
+        <!-- 4. Blue -->
+        <div class="theme-container theme-blue">
+            <h2>Ocean Blue (Cool)</h2>
+            <div id="fretboard-blue"></div>
+        </div>
+
+        <!-- 5. Red -->
+        <div class="theme-container theme-red">
+            <h2>Magma Red (Warm)</h2>
+            <div id="fretboard-red"></div>
+        </div>
+
+        <!-- 6. Orange -->
+        <div class="theme-container theme-orange">
+            <h2>Sunset Orange (Complementary Accents)</h2>
+            <div id="fretboard-orange"></div>
+        </div>
+    </div>
+
+    <!-- Dependencies -->
+    <script src="musicTheory.js"></script>
+    <script src="fretboard.js"></script>
+
+    <script>
+        // Render a C Major chord (Ionian mode) on all fretboards
+        const containers = [
+            'fretboard-hc', 'fretboard-light', 'fretboard-green', 
+            'fretboard-blue', 'fretboard-red', 'fretboard-orange'
+        ];
+
+        containers.forEach(id => {
+            Fretboard.renderFretboard(id, 'C', 'major', 'ionian', null, false, true);
+        });
+    </script>
+</body>
+</html>
