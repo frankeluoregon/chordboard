@@ -32,6 +32,9 @@ const App = {
         // Setup responsive fret limiting
         this.setupResponsiveFrets();
 
+        // Setup mobile toolbar auto-hide
+        this.setupMobileToolbarAutoHide();
+
         // Update padding on window resize
         window.addEventListener('resize', () => this.updatePadding());
 
@@ -78,6 +81,72 @@ const App = {
         window.addEventListener('resize', handleViewportChange);
     },
 
+    /**
+     * Setup mobile toolbar auto-hide on scroll
+     */
+    setupMobileToolbarAutoHide() {
+        // Only apply on mobile screens
+        if (window.innerWidth > 768) return;
+
+        const topBar = document.querySelector('.top-bar');
+        if (!topBar) return;
+
+        // Create pull-down tab
+        const toolbarTab = document.createElement('div');
+        toolbarTab.className = 'toolbar-tab';
+        document.body.appendChild(toolbarTab);
+
+        let lastScrollTop = 0;
+        let scrollTimeout = null;
+
+        const handleScroll = () => {
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+            // Clear any pending timeout
+            if (scrollTimeout) {
+                clearTimeout(scrollTimeout);
+            }
+
+            // Scrolling down and past threshold - hide toolbar
+            if (scrollTop > lastScrollTop && scrollTop > 80) {
+                topBar.classList.add('hidden');
+                toolbarTab.classList.add('visible');
+            }
+            // Scrolling up or at top - show toolbar
+            else if (scrollTop < lastScrollTop || scrollTop <= 10) {
+                topBar.classList.remove('hidden');
+                toolbarTab.classList.remove('visible');
+            }
+
+            lastScrollTop = scrollTop;
+        };
+
+        // Handle tab click to reveal toolbar
+        toolbarTab.addEventListener('click', () => {
+            topBar.classList.remove('hidden');
+            toolbarTab.classList.remove('visible');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // Listen for scroll events (throttled)
+        window.addEventListener('scroll', () => {
+            if (!scrollTimeout) {
+                scrollTimeout = setTimeout(() => {
+                    handleScroll();
+                    scrollTimeout = null;
+                }, 50);
+            }
+        }, { passive: true });
+
+        // Re-check on orientation change
+        window.addEventListener('orientationchange', () => {
+            setTimeout(() => {
+                topBar.classList.remove('hidden');
+                toolbarTab.classList.remove('visible');
+                lastScrollTop = 0;
+            }, 300);
+        });
+    },
 
     /**
      * Initialize chord objects

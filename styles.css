@@ -1123,6 +1123,54 @@ input[type="checkbox"] {
         padding-top: 0;
     }
 
+    /* Auto-hide toolbar on scroll */
+    .top-bar {
+        transition: transform 0.3s ease-in-out;
+    }
+
+    .top-bar.hidden {
+        transform: translateY(-100%);
+    }
+
+    /* Pull-down tab for hidden toolbar */
+    .toolbar-tab {
+        position: fixed;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80px;
+        height: 28px;
+        background: #2a1f1a;
+        border-radius: 0 0 12px 12px;
+        border: 2px solid #5c2f1f;
+        border-top: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 999;
+        cursor: pointer;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease-in-out;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .toolbar-tab.visible {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .toolbar-tab::after {
+        content: '▼';
+        color: #f4a460;
+        font-size: 1.2em;
+        font-weight: bold;
+    }
+
+    .toolbar-tab:active {
+        background: #3d2f27;
+    }
+
     /* Compact toolbar for small screens */
     .top-bar-content {
         padding: 8px 12px;
@@ -1186,6 +1234,13 @@ input[type="checkbox"] {
     /* Hide legend on very small screens */
     .legend {
         display: none;
+    }
+
+    /* Hide zoom controls on mobile - frets are auto-managed */
+    .input-group:has(#zoom-slider),
+    #zoom-slider,
+    #zoom-value {
+        display: none !important;
     }
 }
 
