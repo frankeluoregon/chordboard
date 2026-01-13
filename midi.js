@@ -1,35 +1,151 @@
-// MIDI Playback Module
+// MIDI Playback Module with Tone.js Samplers
 const MIDIPlayer = {
-    audioContext: null,
-    masterGainNode: null,
-    activeNotes: new Map(), // Track playing notes for cleanup
+    samplers: {},
+    activeNotes: new Map(),
+    isInitialized: false,
+    baseUrl: './samples/', // Use local samples folder
 
-    // Instrument voice mappings (General MIDI Program Numbers)
+    // Instrument voice mappings for Tone.js
     instruments: {
-        guitar: { program: 24, name: 'Acoustic Guitar (nylon)' },
-        bass4: { program: 33, name: 'Electric Bass (finger)' },
-        bass5: { program: 33, name: 'Electric Bass (finger)' },
-        bass6: { program: 33, name: 'Electric Bass (finger)' },
-        ukulele: { program: 24, name: 'Acoustic Guitar (nylon)' },
-        mandolin: { program: 105, name: 'Banjo' },
-        banjo: { program: 105, name: 'Banjo' }
+        guitar: { type: 'guitar-acoustic', name: 'Acoustic Guitar' },
+        bass4: { type: 'bass-electric', name: 'Electric Bass' },
+        bass5: { type: 'bass-electric', name: 'Electric Bass' },
+        bass6: { type: 'bass-electric', name: 'Electric Bass' },
+        ukulele: { type: 'guitar-nylon', name: 'Nylon Guitar' },
+        mandolin: { type: 'guitar-nylon', name: 'Mandolin' },
+        banjo: { type: 'guitar-acoustic', name: 'Banjo' }
     },
 
     /**
-     * Initialize Web Audio API
+     * Initialize Tone.js and create samplers with real instrument samples
      */
     async init() {
-        if (!this.audioContext) {
-            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            this.masterGainNode = this.audioContext.createGain();
-            this.masterGainNode.connect(this.audioContext.destination);
-            this.masterGainNode.gain.value = 0.3; // Master volume
+        if (this.isInitialized) return;
+
+        try {
+            // Start Tone.js audio context (requires user gesture)
+            await Tone.start();
+            console.log('Tone.js started, AudioContext state:', Tone.context.state);
+        } catch (error) {
+            console.error('Failed to start Tone.js:', error);
+            throw error;
         }
 
-        // Resume context if suspended (required by some browsers)
-        if (this.audioContext.state === 'suspended') {
-            await this.audioContext.resume();
+        // Create samplers for different instrument types with sampled notes
+        // Note: We'll use a reduced set of samples for faster loading
+        try {
+            this.samplers = {
+                'guitar-acoustic': new Tone.Sampler({
+                    urls: {
+                        A2: "A2.mp3",
+                        A3: "A3.mp3",
+                        A4: "A4.mp3",
+                        C3: "C3.mp3",
+                        C4: "C4.mp3",
+                        C5: "C5.mp3",
+                        "D#3": "Ds3.mp3",
+                        "D#4": "Ds4.mp3",
+                        "F#2": "Fs2.mp3",
+                        "F#3": "Fs3.mp3",
+                        "F#4": "Fs4.mp3"
+                    },
+                    baseUrl: this.baseUrl + "guitar-acoustic/",
+                    release: 1,
+                    onload: () => {
+                        console.log('Guitar acoustic samples loaded');
+                    }
+                }).toDestination(),
+
+                'guitar-nylon': new Tone.Sampler({
+                    urls: {
+                        A2: "A2.mp3",
+                        A3: "A3.mp3",
+                        A4: "A4.mp3",
+                        C3: "C3.mp3",
+                        C4: "C4.mp3",
+                        C5: "C5.mp3",
+                        "D#3": "Ds3.mp3",
+                        "D#4": "Ds4.mp3",
+                        "F#2": "Fs2.mp3",
+                        "F#3": "Fs3.mp3",
+                        "F#4": "Fs4.mp3"
+                    },
+                    baseUrl: this.baseUrl + "guitar-nylon/",
+                    release: 1,
+                    onload: () => {
+                        console.log('Guitar nylon samples loaded');
+                    }
+                }).toDestination(),
+
+                'bass-electric': new Tone.Sampler({
+                    urls: {
+                        A1: "A1.mp3",
+                        A2: "A2.mp3",
+                        C1: "C1.mp3",
+                        C2: "C2.mp3",
+                        "D#1": "Ds1.mp3",
+                        "D#2": "Ds2.mp3",
+                        "F#1": "Fs1.mp3",
+                        "F#2": "Fs2.mp3"
+                    },
+                    baseUrl: this.baseUrl + "bass-electric/",
+                    release: 1,
+                    onload: () => {
+                        console.log('Bass electric samples loaded');
+                    }
+                }).toDestination()
+            };
+
+            // Set volumes
+            this.samplers['guitar-acoustic'].volume.value = -8;
+            this.samplers['guitar-nylon'].volume.value = -8;
+            this.samplers['bass-electric'].volume.value = -10;
+
+            this.isInitialized = true;
+            console.log('All samplers initialized');
+        } catch (error) {
+            console.error('Error initializing samplers:', error);
+            // Fallback to simple synthesis if samplers fail to load
+            this.initFallbackSynth();
         }
+    },
+
+    /**
+     * Fallback to simple synthesis if samples fail to load
+     */
+    initFallbackSynth() {
+        console.log('Using fallback synthesis');
+        this.samplers = {
+            'guitar-acoustic': new Tone.PolySynth(Tone.Synth, {
+                oscillator: { type: "fatsawtooth" },
+                envelope: { attack: 0.01, decay: 0.1, sustain: 0.5, release: 0.4 }
+            }).toDestination(),
+            'guitar-nylon': new Tone.PolySynth(Tone.Synth, {
+                oscillator: { type: "fatsawtooth" },
+                envelope: { attack: 0.01, decay: 0.1, sustain: 0.5, release: 0.4 }
+            }).toDestination(),
+            'bass-electric': new Tone.PolySynth(Tone.Synth, {
+                oscillator: { type: "fatsawtooth" },
+                envelope: { attack: 0.01, decay: 0.1, sustain: 0.4, release: 1.4 }
+            }).toDestination()
+        };
+        this.samplers['guitar-acoustic'].volume.value = -8;
+        this.samplers['guitar-nylon'].volume.value = -8;
+        this.samplers['bass-electric'].volume.value = -10;
+        this.isInitialized = true;
+    },
+
+    /**
+     * Get sampler for instrument
+     */
+    getSampler(instrument) {
+        const instrumentConfig = this.instruments[instrument] || this.instruments.guitar;
+        console.log(`Getting sampler for ${instrument} -> ${instrumentConfig.type}`);
+        const sampler = this.samplers[instrumentConfig.type];
+        if (!sampler) {
+            console.error(`No sampler found for type: ${instrumentConfig.type}`);
+        }
+        return sampler;
     },
 
     /**
@@ -54,6 +170,16 @@ const MIDIPlayer = {
         const octave = match[2] ? parseInt(match[2]) : 4;
 
         return (octave + 1) * 12 + noteMap[note];
+    },
+
+    /**
+     * Convert MIDI note number to Tone.js note name
+     */
+    midiToToneNote(midiNote) {
+        const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+        const octave = Math.floor(midiNote / 12) - 1;
+        const noteIndex = midiNote % 12;
+        return noteNames[noteIndex] + octave;
     },
 
     /**
@@ -111,105 +237,108 @@ const MIDIPlayer = {
     },
 
     /**
-     * Play a single note using Web Audio API
-     */
-    playNote(midiNote, duration = 1.0, startTime = 0, velocity = 0.7) {
-        const frequency = 440 * Math.pow(2, (midiNote - 69) / 12);
-        const now = this.audioContext.currentTime + startTime;
-
-        // Create oscillator with more guitar-like sound
-        const oscillator = this.audioContext.createOscillator();
-        const gainNode = this.audioContext.createGain();
-
-        // Use triangle wave for warmer sound
-        oscillator.type = 'triangle';
-        oscillator.frequency.value = frequency;
-
-        // ADSR envelope for more natural sound
-        gainNode.gain.setValueAtTime(0, now);
-        gainNode.gain.linearRampToValueAtTime(velocity * 0.3, now + 0.01); // Attack
-        gainNode.gain.linearRampToValueAtTime(velocity * 0.2, now + 0.05); // Decay
-        gainNode.gain.setValueAtTime(velocity * 0.2, now + duration - 0.1); // Sustain
-        gainNode.gain.exponentialRampToValueAtTime(0.001, now + duration); // Release
-
-        oscillator.connect(gainNode);
-        gainNode.connect(this.masterGainNode);
-
-        oscillator.start(now);
-        oscillator.stop(now + duration);
-
-        // Track active note
-        const noteId = `${midiNote}-${now}`;
-        this.activeNotes.set(noteId, { oscillator, gainNode });
-
-        // Clean up after note finishes
-        oscillator.onended = () => {
-            this.activeNotes.delete(noteId);
-        };
-    },
-
-    /**
      * Play chord as harmony (all notes at once)
      */
     async playChordHarmony(chord, instrument, duration = 2.0) {
-        await this.init();
+        try {
+            await this.init();
+            console.log('Playing harmony for:', chord, 'on', instrument);
 
-        const notes = this.getChordMidiNotes(chord, instrument);
+            const midiNotes = this.getChordMidiNotes(chord, instrument);
+            console.log('MIDI notes:', midiNotes);
 
-        // Play all notes simultaneously
-        notes.forEach(midiNote => {
-            this.playNote(midiNote, duration, 0, 0.6);
-        });
+            const toneNotes = midiNotes.map(midi => this.midiToToneNote(midi));
+            console.log('Tone notes:', toneNotes);
+
+            const sampler = this.getSampler(instrument);
+
+            if (!sampler) {
+                console.error('No sampler available for', instrument);
+                return;
+            }
+
+            // Play chord
+            sampler.triggerAttackRelease(toneNotes, duration);
+            console.log('Triggered notes');
+        } catch (error) {
+            console.error('Error playing harmony:', error);
+        }
     },
 
     /**
      * Play chord as strum (notes in quick succession)
      */
     async playChordStrum(chord, instrument, duration = 2.0, direction = 'down') {
-        await this.init();
+        try {
+            await this.init();
+            console.log('Playing strum for:', chord, 'on', instrument);
 
-        let notes = this.getChordMidiNotes(chord, instrument);
+            let midiNotes = this.getChordMidiNotes(chord, instrument);
 
-        // Reverse for upstroke
-        if (direction === 'up') {
-            notes = notes.reverse();
+            // Reverse for upstroke
+            if (direction === 'up') {
+                midiNotes = midiNotes.reverse();
+            }
+
+            const sampler = this.getSampler(instrument);
+            if (!sampler) {
+                console.error('No sampler available for', instrument);
+                return;
+            }
+
+            const strumDelay = 0.05; // 50ms between notes
+
+            midiNotes.forEach((midiNote, index) => {
+                const toneNote = this.midiToToneNote(midiNote);
+                const startTime = '+' + (index * strumDelay);
+                sampler.triggerAttackRelease(toneNote, duration, startTime);
+            });
+            console.log('Triggered strum');
+        } catch (error) {
+            console.error('Error playing strum:', error);
         }
-
-        const strumDelay = 0.08; // 80ms between notes for clearer strum
-
-        notes.forEach((midiNote, index) => {
-            const startTime = index * strumDelay;
-            this.playNote(midiNote, duration, startTime, 0.7);
-        });
     },
 
     /**
      * Play chord as arpeggio (notes in sequence)
      */
     async playChordArpeggio(chord, instrument, duration = 2.0, pattern = 'ascending') {
-        await this.init();
+        try {
+            await this.init();
+            console.log('Playing arpeggio for:', chord, 'on', instrument);
 
-        let notes = this.getChordMidiNotes(chord, instrument);
+            let midiNotes = this.getChordMidiNotes(chord, instrument);
 
-        // Remove duplicates and sort
-        notes = [...new Set(notes)].sort((a, b) => a - b);
+            // Remove duplicates and sort
+            midiNotes = [...new Set(midiNotes)].sort((a, b) => a - b);
 
-        // Apply pattern
-        if (pattern === 'descending') {
-            notes = notes.reverse();
-        } else if (pattern === 'alternating') {
-            const ascending = [...notes];
-            const descending = [...notes].reverse().slice(1, -1);
-            notes = [...ascending, ...descending];
+            // Apply pattern
+            if (pattern === 'descending') {
+                midiNotes = midiNotes.reverse();
+            } else if (pattern === 'alternating') {
+                const ascending = [...midiNotes];
+                const descending = [...midiNotes].reverse().slice(1, -1);
+                midiNotes = [...ascending, ...descending];
+            }
+
+            const sampler = this.getSampler(instrument);
+            if (!sampler) {
+                console.error('No sampler available for', instrument);
+                return;
+            }
+
+            const noteDelay = duration / midiNotes.length;
+            const noteDuration = noteDelay * 1.2; // Slight overlap
+
+            midiNotes.forEach((midiNote, index) => {
+                const toneNote = this.midiToToneNote(midiNote);
+                const startTime = '+' + (index * noteDelay);
+                sampler.triggerAttackRelease(toneNote, noteDuration, startTime);
+            });
+            console.log('Triggered arpeggio');
+        } catch (error) {
+            console.error('Error playing arpeggio:', error);
         }
-
-        const noteDelay = duration / notes.length;
-        const noteDuration = noteDelay * 1.2; // Slight overlap
-
-        notes.forEach((midiNote, index) => {
-            const startTime = index * noteDelay;
-            this.playNote(midiNote, noteDuration, startTime, 0.6);
-        });
     },
 
     /**
@@ -238,16 +367,13 @@ const MIDIPlayer = {
      * Stop all currently playing notes
      */
     stopAll() {
-        this.activeNotes.forEach(({ oscillator, gainNode }) => {
-            try {
-                gainNode.gain.cancelScheduledValues(this.audioContext.currentTime);
-                gainNode.gain.setValueAtTime(gainNode.gain.value, this.audioContext.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.001, this.audioContext.currentTime + 0.1);
-                oscillator.stop(this.audioContext.currentTime + 0.1);
-            } catch (e) {
-                // Note may have already stopped
-            }
+        if (!this.isInitialized) return;
+
+        // Release all samplers
+        Object.values(this.samplers).forEach(sampler => {
+            sampler.releaseAll();
         });
+
         this.activeNotes.clear();
     }
 };

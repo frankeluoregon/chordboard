@@ -705,14 +705,20 @@ const App = {
      * Play a chord using MIDI
      */
     async playChord(chord, playbackMode) {
+        console.log('App.playChord called with:', chord, playbackMode);
         const instrument = this.currentInstrument;
+        console.log('Current instrument:', instrument);
 
-        if (playbackMode === 'harmony') {
-            await MIDIPlayer.playChordHarmony(chord, instrument);
-        } else if (playbackMode === 'strum') {
-            await MIDIPlayer.playChordStrum(chord, instrument);
-        } else if (playbackMode === 'arpeggio') {
-            await MIDIPlayer.playChordArpeggio(chord, instrument);
+        try {
+            if (playbackMode === 'harmony') {
+                await MIDIPlayer.playChordHarmony(chord, instrument);
+            } else if (playbackMode === 'strum') {
+                await MIDIPlayer.playChordStrum(chord, instrument);
+            } else if (playbackMode === 'arpeggio') {
+                await MIDIPlayer.playChordArpeggio(chord, instrument);
+            }
+        } catch (error) {
+            console.error('Error in playChord:', error);
         }
     },
 
@@ -720,8 +726,15 @@ const App = {
      * Play entire progression
      */
     async playProgression(playbackMode) {
+        console.log('App.playProgression called with:', playbackMode);
         const instrument = this.currentInstrument;
-        await MIDIPlayer.playProgression(this.chords, instrument, playbackMode, 2.0);
+        console.log('Current instrument:', instrument, 'Chords:', this.chords);
+
+        try {
+            await MIDIPlayer.playProgression(this.chords, instrument, playbackMode, 2.0);
+        } catch (error) {
+            console.error('Error in playProgression:', error);
+        }
     },
 
     /**
