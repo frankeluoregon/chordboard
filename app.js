@@ -120,11 +120,6 @@ const App = {
                 topBar.classList.add('hidden');
                 toolbarTab.classList.add('visible');
             }
-            // Only show automatically if at the very top
-            else if (scrollTop <= 0) {
-                topBar.classList.remove('hidden');
-                toolbarTab.classList.remove('visible');
-            }
 
             lastScrollTop = scrollTop;
         };
