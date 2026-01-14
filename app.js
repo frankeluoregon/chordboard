@@ -244,10 +244,6 @@ const App = {
         // PDF orientation selector - now triggers export on change
         document.getElementById('pdf-orientation').addEventListener('change', (e) => {
             this.pdfOrientation = e.target.value;
-            // Auto-export when orientation is selected
-            this.exportToPDF();
-            // Hide the orientation dropdown after export
-            document.getElementById('pdf-orientation-group').style.display = 'none';
         });
 
         // Zoom slider
@@ -340,14 +336,28 @@ const App = {
         // Export to PDF button - now shows orientation selector
         document.getElementById('export-pdf-btn').addEventListener('click', () => {
             const orientationGroup = document.getElementById('pdf-orientation-group');
-            // Toggle orientation dropdown visibility
-            if (orientationGroup.style.display === 'none') {
-                orientationGroup.style.display = 'flex';
-                // Focus on the select to make it easier to choose
-                document.getElementById('pdf-orientation').focus();
-            } else {
-                orientationGroup.style.display = 'none';
-            }
+            const exportBtn = document.getElementById('export-pdf-btn');
+            const confirmBtn = document.getElementById('confirm-pdf-btn');
+
+            orientationGroup.style.display = 'flex';
+            exportBtn.style.display = 'none';
+            confirmBtn.style.display = 'inline-block';
+            
+            document.getElementById('pdf-orientation').focus();
+        });
+
+        // Confirm PDF Export button
+        document.getElementById('confirm-pdf-btn').addEventListener('click', () => {
+            const orientationGroup = document.getElementById('pdf-orientation-group');
+            const exportBtn = document.getElementById('export-pdf-btn');
+            const confirmBtn = document.getElementById('confirm-pdf-btn');
+
+            this.exportToPDF();
+
+            // Reset UI
+            orientationGroup.style.display = 'none';
+            confirmBtn.style.display = 'none';
+            exportBtn.style.display = 'inline-block';
         });
 
         // Theme Menu Logic
@@ -491,7 +501,9 @@ const App = {
         setTimeout(() => {
             for (let i = 0; i < this.numChords; i++) {
                 const chord = this.chords[i];
-                const nextChordRoot = i < this.numChords - 1 ? this.chords[i + 1].root : null;
+                const nextChordRoot = i < this.numChords - 1 
+                    ? this.chords[i + 1].root 
+                    : (this.numChords > 0 ? this.chords[0].root : null);
                 Fretboard.renderFretboard(
                     `prog-fretboard-${i}`,
                     chord.root,
@@ -818,7 +830,11 @@ const App = {
         // This is a bit redundant but necessary to populate the initial state correctly
         const chordNotes = MusicTheory.getChordNotes(chord.root, chord.type);
         const scaleNotes = MusicTheory.getScaleNotes(chord.root, chord.mode);
-        const nextChordRoot = (this.currentMode === 'progression' && index < this.chords.length - 1) ? this.chords[index+1].root : null;
+        
+        let nextChordRoot = null;
+        if (this.currentMode === 'progression') {
+            nextChordRoot = index < this.chords.length - 1 ? this.chords[index + 1].root : this.chords[0].root;
+        }
 
         for (let s = 0; s < Fretboard.tuning.length; s++) {
             for (let f = 0; f <= Fretboard.numFrets; f++) {
@@ -1289,8 +1305,8 @@ const App = {
         for (let i = 0; i < this.chords.length; i++) {
             const chord = this.chords[i];
             // Only pass nextChordRoot in progression mode (to show leading notes)
-            const nextChordRoot = this.currentMode === 'progression' && i < this.chords.length - 1
-                ? this.chords[i + 1].root
+            const nextChordRoot = this.currentMode === 'progression'
+                ? (i < this.chords.length - 1 ? this.chords[i + 1].root : this.chords[0].root)
                 : null;
 
             // Create chord label
