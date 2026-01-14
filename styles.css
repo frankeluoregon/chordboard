@@ -280,6 +280,19 @@ body {
     gap: 15px;
 }
 
+.app-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.app-title {
+    font-size: 1.8em;
+    font-weight: bold;
+    color: var(--text-accent);
+    line-height: 1;
+}
+
 .app-logo {
     width: 60px;
     height: 60px;
@@ -1550,6 +1563,10 @@ input[type="checkbox"] {
         height: 40px;
     }
 
+    .app-title {
+        font-size: 1.4em;
+    }
+
     .mode-btn {
         padding: 6px 12px;
         font-size: 0.85em;
@@ -1817,6 +1834,10 @@ input[type="checkbox"] {
     .app-logo {
         width: 32px;
         height: 32px;
+    }
+
+    .app-title {
+        font-size: 1.2em;
     }
 
     .mode-btn {
