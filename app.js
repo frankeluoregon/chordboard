@@ -44,6 +44,9 @@ const App = {
 
         // Render the initial mode
         this.renderFretboards();
+
+        // Ensure favicon matches theme
+        this.updateFavicon();
     },
 
     /**
@@ -1367,6 +1370,7 @@ const App = {
         });
 
         this.saveSettings();
+        this.updateFavicon();
     },
 
     /**
@@ -1410,6 +1414,47 @@ const App = {
             } catch (e) {
                 console.error('Error loading settings:', e);
             }
+        }
+    },
+
+    /**
+     * Update favicon to match current theme color
+     */
+    async updateFavicon() {
+        try {
+            // Get current logo color from CSS variable
+            const computedStyle = getComputedStyle(document.body);
+            let color = computedStyle.getPropertyValue('--logo-color').trim();
+            
+            // Fallback if empty
+            if (!color) color = '#f4a460';
+
+            // Fetch SVG if not cached
+            if (!this.logoSvgContent) {
+                const response = await fetch('logo.svg');
+                if (!response.ok) return;
+                this.logoSvgContent = await response.text();
+            }
+
+            // Inject fill color
+            let newSvg = this.logoSvgContent;
+            if (newSvg.includes('fill=')) {
+                newSvg = newSvg.replace(/fill="[^"]*"/, `fill="${color}"`);
+            } else {
+                newSvg = newSvg.replace('<svg', `<svg fill="${color}"`);
+            }
+
+            // Update link tag
+            let link = document.querySelector("link[rel~='icon']");
+            if (!link) {
+                link = document.createElement('link');
+                link.rel = 'icon';
+                document.head.appendChild(link);
+            }
+            link.href = `data:image/svg+xml,${encodeURIComponent(newSvg)}`;
+
+        } catch (e) {
+            console.warn('Could not update favicon:', e);
         }
     }
 };
