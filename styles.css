@@ -26,6 +26,7 @@
     --nut-bg: #a0826d;
     --inlay-color: #d4a574;
 
+    --logo-color: #f4a460;
     /* Note Markers */
     --root-bg: #8d5524;
     --root-border: #f4a460;
@@ -80,6 +81,7 @@
     --leading-bg: #666666;
     --leading-border: #333333;
     --leading-text: #ffffff;
+    --logo-color: #0055aa;
 }
 
 .theme-high-contrast {
@@ -115,6 +117,7 @@
     --leading-bg: #00ffff;
     --leading-border: #00ffff;
     --leading-text: #000000;
+    --logo-color: #ffff00;
 }
 
 /* Muted Orange & Red (Autumn) */
@@ -151,6 +154,7 @@
     --leading-bg: #5d4037;
     --leading-border: #8d6e63;
     --leading-text: #ff7043;
+    --logo-color: #ff7043;
 }
 
 /* Muted Green & Yellow (Meadow) */
@@ -187,6 +191,7 @@
     --leading-bg: #33691e;
     --leading-border: #558b2f;
     --leading-text: #dce775;
+    --logo-color: #f9a825;
 }
 
 /* Muted Blue & Purple (Dusk) */
@@ -223,6 +228,7 @@
     --leading-bg: #40407a;
     --leading-border: #706fd3;
     --leading-text: #a55eea;
+    --logo-color: #a55eea;
 }
 
 * {
@@ -274,11 +280,18 @@ body {
     gap: 15px;
 }
 
-.top-bar h1 {
-    color: var(--text-accent);
-    font-size: 1.8em;
-    margin: 0;
-    white-space: nowrap;
+.app-logo {
+    width: 180px; /* Adjust width based on your logo's aspect ratio */
+    height: 40px;
+    background-color: var(--logo-color);
+    -webkit-mask-image: url('logo.svg');
+    mask-image: url('logo.svg');
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    -webkit-mask-position: left center;
+    mask-position: left center;
 }
 
 /* Apply the offset to your page content wrappers */
@@ -1536,8 +1549,9 @@ input[type="checkbox"] {
         gap: 8px;
     }
 
-    .top-bar h1 {
-        font-size: clamp(1.2em, 4vw, 1.8em);
+    .app-logo {
+        width: clamp(120px, 30vw, 160px);
+        height: 32px;
     }
 
     .mode-btn {
@@ -1804,8 +1818,8 @@ input[type="checkbox"] {
         gap: 6px;
     }
 
-    .top-bar h1 {
-        font-size: 1.2em;
+    .app-logo {
+        width: 120px;
     }
 
     .mode-btn {
