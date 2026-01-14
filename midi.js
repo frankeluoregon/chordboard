@@ -156,8 +156,8 @@ const MIDIPlayer = {
                     // Timeout after 10 seconds
                     setTimeout(() => {
                         clearInterval(checkLoaded);
-                        console.warn('Sampler load timeout');
-                        resolve();
+                        console.error('Sampler load timeout. Will use fallback synth.');
+                        reject(new Error('Sampler load timeout'));
                     }, 10000);
                 });
             });
@@ -207,6 +207,44 @@ const MIDIPlayer = {
             console.error(`No sampler found for type: ${instrumentConfig.type}`);
         }
         return sampler;
+    },
+
+    /**
+     * Play a single note
+     */
+    async playSingleNote(toneNote, instrument, duration = 0.8) {
+        try {
+            await this.init();
+            const sampler = this.getSampler(instrument);
+            if (!sampler) {
+                console.error('No sampler available for', instrument);
+                return;
+            }
+            // Play note
+            sampler.triggerAttackRelease(toneNote, duration);
+            console.log(`Triggered note: ${toneNote}`);
+        } catch (error) {
+            console.error('Error playing single note:', error);
+        }
+    },
+
+    /**
+     * Get MIDI note number for a specific fretboard position
+     */
+    getMidiNoteAtPosition(stringIndex, fret, instrument) {
+        // Use Fretboard.tuning if instruments match to support alternate tunings
+        const tuning = (instrument === Fretboard.currentInstrument) ? Fretboard.tuning : (Fretboard.tunings[instrument] || Fretboard.tuning);
+        const baseOctaves = this.getBaseOctaves(instrument);
+
+        if (stringIndex >= tuning.length) {
+            console.error(`String index ${stringIndex} is out of bounds for instrument ${instrument}`);
+            return null;
+        }
+
+        const openNoteName = tuning[stringIndex];
+        const baseOctave = baseOctaves[stringIndex];
+        const openMidi = this.noteToMidi(openNoteName + baseOctave);
+        return openMidi + fret;
     },
 
     /**
@@ -504,18 +542,3 @@ const MIDIPlayer = {
         this.activeNotes.clear();
     }
 };
-
-// Auto-initialize audio context on page load with a phantom interaction
-// This removes the need for the first user click to enable audio
-document.addEventListener('DOMContentLoaded', async () => {
-    // Wait a moment for page to settle
-    setTimeout(async () => {
-        try {
-            console.log('Auto-initializing audio on page load...');
-            await MIDIPlayer.init();
-            console.log('Audio ready - no click required!');
-        } catch (error) {
-            console.log('Auto-init failed, will initialize on first play:', error);
-        }
-    }, 500);
-});

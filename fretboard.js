@@ -225,21 +225,21 @@ const Fretboard = {
                         marker.classList.add('scale-note');
                     }
 
+                    // Make all markers interactive if a click handler is present
+                    if (onNoteClick) {
+                        marker.classList.add('interactive');
+                        marker.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            onNoteClick(stringIndex, fret);
+                        });
+                    }
+
                     // Apply Filter Mode specific styling
                     if (isFilterMode) {
-                        marker.classList.add('interactive');
                         if (!isSelected) {
                             marker.classList.add('dimmed');
                         } else {
                             marker.classList.add('selected');
-                        }
-                        
-                        // Attach click handler
-                        if (onNoteClick) {
-                            marker.addEventListener('click', (e) => {
-                                e.stopPropagation();
-                                onNoteClick(stringIndex, fret);
-                            });
                         }
                     }
 
