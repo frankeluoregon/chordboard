@@ -856,16 +856,30 @@ const App = {
     },
 
     /**
-     * Handle clicking a note in filter mode
+     * Handle clicking a note on the fretboard.
+     * Plays the note's sound and handles filter selection if in filter mode.
      */
     handleNoteClick(index, string, fret) {
         const chord = this.chords[index];
+
+        // --- Play the clicked note ---
+        const midiNote = MIDIPlayer.getMidiNoteAtPosition(string, fret, this.currentInstrument);
+        if (midiNote !== null) {
+            const toneNote = MIDIPlayer.midiToToneNote(midiNote);
+            // Use a shorter duration for single note clicks
+            MIDIPlayer.playSingleNote(toneNote, this.currentInstrument, 0.8);
+        }
+        // --- End note playback ---
+
+        // If not in filter mode, we're done.
         if (!chord.isFiltering) return;
 
+        // --- Handle filter logic ---
         const posKey = `${string}-${fret}`;
         
         // Ensure set exists
         if (!chord.visiblePositions) {
+            // This shouldn't happen if toggleFilterMode is used correctly, but as a safeguard.
             chord.visiblePositions = new Set();
         }
 
@@ -875,11 +889,14 @@ const App = {
             chord.visiblePositions.add(posKey);
         }
 
-        this.updateFretboard(index);
-
-        // Play ONLY the clicked note for auditioning
-        const tempChord = { ...chord, visiblePositions: new Set([posKey]) };
-        this.playChord(tempChord, 'harmony');
+        // Re-render the fretboard to show the change in selection
+        if (this.currentMode === 'fretboard') {
+            this.updateFretboard(index);
+        } else {
+            // In progression mode, a full re-render of the display is needed
+            // to correctly update the single fretboard among many.
+            this.renderProgressionDisplay();
+        }
     },
 
     /**
