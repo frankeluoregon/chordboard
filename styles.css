@@ -280,9 +280,15 @@ body {
     gap: 15px;
 }
 
+.app-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
 .app-logo {
-    width: 180px; /* Adjust width based on your logo's aspect ratio */
-    height: 40px;
+    width: 60px;
+    height: 60px;
     background-color: var(--logo-color);
     -webkit-mask-image: url('logo.svg');
     mask-image: url('logo.svg');
@@ -290,10 +296,19 @@ body {
     mask-repeat: no-repeat;
     -webkit-mask-size: contain;
     mask-size: contain;
-    -webkit-mask-position: left center;
-    mask-position: left center;
+    -webkit-mask-position: center;
+    mask-position: center;
     -webkit-mask-mode: alpha;
     mask-mode: alpha;
+}
+
+.app-title {
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    font-size: 2.2rem;
+    font-weight: bold;
+    color: var(--logo-color);
+    letter-spacing: -1px;
+    line-height: 1;
 }
 
 /* Apply the offset to your page content wrappers */
@@ -1552,8 +1567,12 @@ input[type="checkbox"] {
     }
 
     .app-logo {
-        width: clamp(120px, 30vw, 160px);
-        height: 32px;
+        width: 40px;
+        height: 40px;
+    }
+
+    .app-title {
+        font-size: 1.5rem;
     }
 
     .mode-btn {
@@ -1821,7 +1840,8 @@ input[type="checkbox"] {
     }
 
     .app-logo {
-        width: 120px;
+        width: 32px;
+        height: 32px;
     }
 
     .mode-btn {
