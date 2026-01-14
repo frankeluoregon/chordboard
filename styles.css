@@ -284,6 +284,10 @@ body {
     display: flex;
     align-items: center;
     gap: 12px;
+    background-color: var(--bg-element);
+    padding: 4px 20px 4px 4px;
+    border-radius: 34px;
+    border: 1px solid var(--border-dim);
 }
 
 .app-title {
@@ -291,6 +295,7 @@ body {
     font-weight: bold;
     color: var(--text-accent);
     line-height: 1;
+    font-family: 'Trebuchet MS', sans-serif;
 }
 
 .app-logo {
@@ -300,7 +305,6 @@ body {
     background-repeat: no-repeat;
     background-size: contain;
     background-position: center;
-    filter: drop-shadow(1px 0 0 black) drop-shadow(-1px 0 0 black) drop-shadow(0 1px 0 black) drop-shadow(0 -1px 0 black);
 }
 
 /* Apply the offset to your page content wrappers */
@@ -1286,6 +1290,14 @@ body:has(#fretboard-page.active) .legend .leading-note-legend {
     cursor: pointer;
     font-size: 1.2em;
     transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.theme-btn svg {
+    width: 1em;
+    height: 1em;
 }
 
 .theme-btn:hover {
