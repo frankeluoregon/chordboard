@@ -101,6 +101,7 @@ const App = {
         // Create pull-down tab
         const toolbarTab = document.createElement('div');
         toolbarTab.className = 'toolbar-tab';
+        toolbarTab.innerHTML = '<span class="tab-label">MENU</span><span class="tab-arrow">▼</span>';
         document.body.appendChild(toolbarTab);
 
         let lastScrollTop = 0;
@@ -115,12 +116,12 @@ const App = {
             }
 
             // Scrolling down and past threshold - hide toolbar
-            if (scrollTop > lastScrollTop && scrollTop > 80) {
+            if (scrollTop > lastScrollTop && scrollTop > 50) {
                 topBar.classList.add('hidden');
                 toolbarTab.classList.add('visible');
             }
-            // Scrolling up or at top - show toolbar
-            else if (scrollTop < lastScrollTop || scrollTop <= 10) {
+            // Only show automatically if at the very top
+            else if (scrollTop <= 0) {
                 topBar.classList.remove('hidden');
                 toolbarTab.classList.remove('visible');
             }
